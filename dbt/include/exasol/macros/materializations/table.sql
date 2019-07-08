@@ -3,9 +3,7 @@
   {%- set tmp_identifier = model['name'] + '__dbt_tmp' -%}
   {%- set backup_identifier = model['name'] + '__dbt_backup' -%}
 
-  {{ log("Searching old relation " ~ database  ~"."~ schema ~"."~ identifier ~ " because it is a view and this model is a table.") }}
   {%- set old_relation = adapter.get_relation(database=database, schema=schema, identifier=identifier) -%}
-  {{ log("Searching old relation " ~ old_relation) }}
   {%- set target_relation = api.Relation.create(identifier=identifier,
                                                 schema=schema,
                                                 database=database, type='table') -%}
@@ -19,6 +17,7 @@
 
   -- drop the backup relation if it exists, then make a new one that uses the old relation's type
   {%- set backup_relation = adapter.get_relation(database=database, schema=schema, identifier=backup_identifier) -%}
+
   {% if backup_relation is not none -%}
     {{ adapter.drop_relation(backup_relation) }}
   {%- endif %}

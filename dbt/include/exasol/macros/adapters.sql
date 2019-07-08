@@ -31,11 +31,7 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
 
 {% macro exasol__list_schemas(database) %}
   {% call statement('list_schemas', fetch_result=True, auto_begin=False) -%}
-    select schema_ as [schema] from (
-		select distinct table_schema as schema_ from sys.exa_user_tables
-		union
-		select distinct view_schema as schema_ from sys.exa_user_views
-    )
+    select schema_name as [schema] from exa_schemas
   {% endcall %}
   {{ return(load_result('list_schemas').table) }}
 {% endmacro %}
@@ -53,7 +49,7 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
 {% endmacro %}
 
 {% macro exasol__drop_relation(relation) -%}
-  {% call statement('drop_relation', auto_begin=False) -%}
+  {% call statement('drop_relation', fetch_result=True) -%}
     drop {{ relation.type }} if exists {{ relation.schema }}.{{ relation.identifier }}
   {%- endcall %}
 {% endmacro %}
@@ -61,16 +57,14 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
 {% macro exasol__check_schema_exists(database, schema) -%}
   {% call statement('check_schema_exists', fetch_result=True, auto_begin=False) -%}
     select count(*) as schema_exist from (
-		select distinct table_schema as schema_ from sys.exa_user_tables
-		union
-		select distinct view_schema as schema_ from sys.exa_user_views
-    ) WHERE schema_ = '{{ schema }}'
+		select schema_name as [schema] from exa_schemas
+    ) WHERE [schema] = '{{ schema }}'
   {%- endcall %}
   {{ return(load_result('check_schema_exists').table) }}
 {% endmacro %}
 
 {% macro exasol__create_view_as(relation, sql) -%}
-  create view {{ relation.schema }}.{{ relation.identifier }} as 
+  create or replace view {{ relation.schema }}.{{ relation.identifier }} as 
     {{ sql }}
 {% endmacro %}
 

@@ -6,7 +6,17 @@ from dbt.adapters.sql import SQLConnectionManager
 from dbt.logger import GLOBAL_LOGGER as logger
 
 import pyexasol
-from pyexasol import ExaStatement 
+from pyexasol import ExaStatement , ExaConnection
+
+def connect(**kwargs):
+    if 'autocommit' not in kwargs:
+        kwargs['autocommit'] = False
+
+    return DB2Connection(**kwargs)
+
+class DB2Connection(ExaConnection):
+    def cursor(self):
+        return ExasolCursor(self)
 
 EXASOL_CREDENTIALS_CONTRACT = {
     'type': 'object',
@@ -78,7 +88,7 @@ class ExasolConnectionManager(SQLConnectionManager):
             return connection
         credentials = cls.get_credentials(connection.credentials.incorporate())
         try:
-            C = pyexasol.connect(dsn=credentials.dsn, user=credentials.user, password=credentials.password, autocommit=False)
+            C = connect(dsn=credentials.dsn, user=credentials.user, password=credentials.password, autocommit=True)
             connection.handle = C
             connection.state = 'open'
 
@@ -148,29 +158,55 @@ class ExasolConnectionManager(SQLConnectionManager):
                 logger.debug('On %s: %s', connection.name, sql)
             pre = time.time()
 
-            cursor = connection.handle.execute(sql)
-            #cursor = DB2Connection(connection).cursor().execute(sql)
-
-            cursor = ExaStatementImpl(cursor)
+            cursor = connection.handle.cursor().execute(sql)
 
             logger.debug("SQL status: %s in %0.2f seconds",
                          self.get_status(cursor), (time.time() - pre))
 
             return connection, cursor
 
-class ExaStatementImpl(ExaStatement):
+class ExasolCursor(object):
+    arraysize = 1
 
-    def __init__(self, exaStatement):
-        super(ExaStatementImpl, self).__init__(exaStatement.connection,exaStatement.query)
+    def __init__(self, connection):
+        self.connection = connection
+        self.stmt = None
+
+    def execute(self, query):
+        self.stmt = self.connection.execute(query)
+        return self
+
+    def executemany(self, query):
+        raise RuntimeError
+
+    def fetchone(self):
+        return self.stmt.fetchone()
+
+    def fetchmany(self, size=None):
+        if size is None:
+            size = self.arraysize
+
+        return self.stmt.fetchmany(size)
+
+    def fetchall(self):
+        return self.stmt.fetchall()
+
+    def nextset(self):
+        raise RuntimeError
+
+    def setinputsizes(self):
+        pass
+
+    def setoutputsize(self):
+        pass
 
     @property
     def description(self):
         cols = []
-
-        if 'rowCount' == self.result_type:
+        if 'resultSet' != self.stmt.result_type:
             return None
 
-        for k, v in self.columns().items():
+        for k, v in self.stmt.columns().items():
             cols.append((
                 k,
                 v.get('type', None),
@@ -182,3 +218,10 @@ class ExaStatementImpl(ExaStatement):
             ))
 
         return cols
+
+    @property
+    def rowcount(self):
+        return self.stmt.rowcount()
+
+    def close(self):
+        self.stmt.close()

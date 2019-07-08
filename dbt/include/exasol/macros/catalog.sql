@@ -28,7 +28,7 @@
     cols as (
 
         select
-            'DB' as table_database,
+            'db' as table_database,
             column_schema as table_schema,
             column_table as table_name,
             column_name,
@@ -39,7 +39,14 @@
 
     )
 
-    select tabs.table_owner,cols.*
+    select tabs.table_owner as [table_owner],
+           cols.table_database as [table_database],
+           cols.table_schema as [table_schema],
+           cols.table_name as [table_name],
+           cols.column_name as [column_name],
+           cols.column_index as [column_index],
+           cols.column_type as [column_type],
+           cols.column_comment as [column_comment]
     from tabs
     join cols on tabs.table_database = cols.table_database and tabs.table_schema = cols.table_schema and tabs.table_name = cols.table_name
     join table_owners on tabs.table_database = table_owners.table_database and tabs.table_schema = table_owners.table_schema and tabs.table_name = table_owners.table_name
