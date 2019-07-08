@@ -1,0 +1,184 @@
+from contextlib import contextmanager
+import time
+import dbt.exceptions
+from dbt.adapters.base import Credentials
+from dbt.adapters.sql import SQLConnectionManager
+from dbt.logger import GLOBAL_LOGGER as logger
+
+import pyexasol
+from pyexasol import ExaStatement 
+
+EXASOL_CREDENTIALS_CONTRACT = {
+    'type': 'object',
+    'additionalProperties': False,
+    'properties': {
+        'dsn': {
+            'type': 'string',
+        },
+        'database': {
+            'type': 'string',
+        },
+        'schema': {
+            'type': 'string',
+        },
+        'user': {
+            'type': 'string',
+        },
+        'password': {
+            'type': 'string',
+        },
+    },
+    'required': ['dsn', 'user', 'password'],
+}
+
+class ExasolCredentials(Credentials):
+    SCHEMA = EXASOL_CREDENTIALS_CONTRACT
+
+    @property
+    def type(self):
+        return 'exasol'
+
+    def _connection_keys(self):
+        # return an iterator of keys to pretty-print in 'dbt debug'
+        raise NotImplementedError
+
+    @property
+    def type(self):
+        return 'exasol'
+
+    def _connection_keys(self):
+        # return an iterator of keys to pretty-print in 'dbt debug'
+        return ('dsn', 'user', 'database', 'schema')
+
+
+class ExasolConnectionManager(SQLConnectionManager):
+    TYPE = 'exasol'
+
+    @contextmanager
+    def exception_handler(self, sql):
+        try:
+            yield
+
+        except Exception as e:
+            logger.debug("Error running SQL: %s", sql)
+            logger.debug("Rolling back transaction.")
+            self.release()
+            if isinstance(e, dbt.exceptions.RuntimeException):
+                # during a sql query, an internal to dbt exception was raised.
+                # this sounds a lot like a signal handler and probably has
+                # useful information, so raise it without modification.
+                raise
+
+            raise dbt.exceptions.RuntimeException(e)
+
+    @classmethod
+    def open(cls, connection):
+        if connection.state == 'open':
+            logger.debug('Connection is already open, skipping open.')
+            return connection
+        credentials = cls.get_credentials(connection.credentials.incorporate())
+        try:
+            C = pyexasol.connect(dsn=credentials.dsn, user=credentials.user, password=credentials.password, autocommit=False)
+            connection.handle = C
+            connection.state = 'open'
+
+        except Exception as e:
+            logger.debug("Got an error when attempting to open a postgres "
+                         "connection: '{}'"
+                         .format(e))
+
+            connection.handle = None
+            connection.state = 'fail'
+
+            raise dbt.exceptions.FailedToConnectException(str(e))
+
+        return connection
+
+    def commit(self):
+        connection = self.get_thread_connection()
+        if dbt.flags.STRICT_MODE:
+            assert isinstance(connection, Connection)
+
+        logger.debug('On {}: COMMIT'.format(connection.name))
+        self.add_commit_query()
+
+        connection.transaction_open = False
+
+        return connection
+
+    def begin(self):
+        connection = self.get_thread_connection()
+
+        if dbt.flags.STRICT_MODE:
+            assert isinstance(connection, Connection)
+
+        if connection.transaction_open is True:
+            raise dbt.exceptions.InternalException(
+                'Tried to begin a new transaction on connection "{}", but '
+                'it already had one open!'.format(connection.get('name')))
+
+        connection.transaction_open = True
+        return connection
+
+    def cancel(self, connection):
+        connection_name = connection.name
+        connection.abort_query()
+
+    @classmethod
+    def get_status(cls, cursor):
+        return 'OK'
+
+    @classmethod
+    def get_credentials(cls, credentials):
+        return credentials
+
+    def add_query(self, sql, auto_begin=True, bindings=None,
+                  abridge_sql_log=False):
+        connection = self.get_thread_connection()
+        if auto_begin and connection.transaction_open is False:
+            self.begin()
+
+        logger.debug('Using {} connection "{}".'
+                     .format(self.TYPE, connection.name))
+
+        with self.exception_handler(sql):
+            if abridge_sql_log:
+                logger.debug('On %s: %s....', connection.name, sql[0:512])
+            else:
+                logger.debug('On %s: %s', connection.name, sql)
+            pre = time.time()
+
+            cursor = connection.handle.execute(sql)
+            #cursor = DB2Connection(connection).cursor().execute(sql)
+
+            cursor = ExaStatementImpl(cursor)
+
+            logger.debug("SQL status: %s in %0.2f seconds",
+                         self.get_status(cursor), (time.time() - pre))
+
+            return connection, cursor
+
+class ExaStatementImpl(ExaStatement):
+
+    def __init__(self, exaStatement):
+        super(ExaStatementImpl, self).__init__(exaStatement.connection,exaStatement.query)
+
+    @property
+    def description(self):
+        cols = []
+
+        if 'rowCount' == self.result_type:
+            return None
+
+        for k, v in self.columns().items():
+            cols.append((
+                k,
+                v.get('type', None),
+                v.get('size', None),
+                v.get('size', None),
+                v.get('precision', None),
+                v.get('scale', None),
+                True
+            ))
+
+        return cols
