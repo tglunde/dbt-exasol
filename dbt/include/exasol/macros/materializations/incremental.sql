@@ -66,7 +66,7 @@
        insert into {{ target_relation }} ({{ dest_cols_csv }})
        (
          select {{ dest_cols_csv }}
-         from {{ tmp_relation.database }}.{{ tmp_relation.schema }}.#{{ tmp_relation.identifier }}
+         from {{ tmp_relation.schema }}.{{ tmp_relation.identifier }}
        );
      {% endcall %}
   {%- endif %}

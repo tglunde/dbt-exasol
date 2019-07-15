@@ -93,9 +93,9 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
           column_num_scale
 
       from exa_user_columns
-      where column_table = '{{ relation.identifier }}'
+      where column_table = '{{ relation.identifier|upper }}'
         {% if relation.schema %}
-        and column_schema = '{{ relation.schema }}'
+        and column_schema = '{{ relation.schema|upper }}'
         {% endif %}
       order by column_ordinal_position
 
