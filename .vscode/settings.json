@@ -1,3 +1,5 @@
 {
-    "python.pythonPath": "venv/bin/python3.7"
+    "python.pythonPath": "/home/torsten/project/env/bin/python",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
 }

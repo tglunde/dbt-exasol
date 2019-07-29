@@ -36,10 +36,12 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
   {{ return(load_result('list_schemas').table) }}
 {% endmacro %}
 
-{% macro exasol__create_schema(database_name, schema_name) -%}
-  {% call statement('create_schema', fetch_result=True, auto_begin=False) -%}
-    CREATE SCHEMA IF NOT EXISTS {{ schema_name | replace('"', "") }}
-  {% endcall %}
+{% macro exasol__create_schema(database_name, schema_name) -%}  
+  {%if adapter_macro('check_schema_exists', database_name, schema_name) = 0 %}
+    {% call statement('create_schema', fetch_result=True, auto_begin=False) -%}
+      CREATE SCHEMA IF NOT EXISTS {{ schema_name | replace('"', "") }}
+    {% endcall %}
+  {%- endif -%}
 {% endmacro %}
 
 {% macro exasol__drop_schema(database_name, schema_name) -%}
