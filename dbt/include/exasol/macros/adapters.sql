@@ -37,7 +37,7 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
 {% endmacro %}
 
 {% macro exasol__create_schema(database_name, schema_name) -%}  
-  {%if adapter_macro('check_schema_exists', database_name, schema_name) = 0 %}
+  {%if adapter.check_schema_exists(database_name,schema_name) %}
     {% call statement('create_schema', fetch_result=True, auto_begin=False) -%}
       CREATE SCHEMA IF NOT EXISTS {{ schema_name | replace('"', "") }}
     {% endcall %}
