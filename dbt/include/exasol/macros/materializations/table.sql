@@ -55,6 +55,7 @@
     {% endif %}
   {% endif %}
 
+  {{ drop_relation_if_exists(target_relation) }}
   {{ adapter.rename_relation(intermediate_relation, target_relation) }}
 
   {{ run_hooks(post_hooks, inside_transaction=True) }}
@@ -64,6 +65,7 @@
 
   -- finally, drop the existing/backup relation after the commit
   {{ drop_relation_if_exists(backup_relation) }}
+  {{ drop_relation_if_exists(intermediate_relation) }}
 
   {{ run_hooks(post_hooks, inside_transaction=False) }}
 {% endmaterialization %}
