@@ -147,7 +147,7 @@ class ExasolConnectionManager(SQLConnectionManager):
         connection = self.get_thread_connection()
         if auto_begin and connection.transaction_open is False:
             self.begin()
-
+        logger.debug(sql)
         logger.debug('Using {} connection "{}".'
                      .format(self.TYPE, connection.name))
 
