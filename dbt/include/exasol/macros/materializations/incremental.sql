@@ -32,6 +32,9 @@
   {% set existing_relation = adapter.get_relation(database, schema, identifier) %}
   {% set tmp_relation = make_temp_relation(target_relation) %}
 
+  {% do log(existing_relation ~ '-_._-'*20) %}
+  {% do log(target_relation ~ '-_._-'*20) %}
+
   
 
   -- setup
@@ -70,4 +73,5 @@
 
   {{ run_hooks(post_hooks, inside_transaction=False) }}
 
+  {{ return({'relations': [target_relation]}) }}
 {%- endmaterialization %}
