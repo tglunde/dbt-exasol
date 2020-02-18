@@ -23,7 +23,7 @@ setup(
         ]
     },
     install_requires=[
-       'dbt-core=={}'.format('0.14.0'),
+       'dbt-core=={}'.format('0.15.2'),
         'pyexasol==0.6.3' 
     ]
 )

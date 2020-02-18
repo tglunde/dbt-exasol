@@ -86,6 +86,11 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
   current_timestamp
 {%- endmacro %}
 
+{% macro exasol__snapshot_string_as_time(timestamp) -%}
+    {%- set result = "to_timestamp('" ~ timestamp ~ "')" -%}
+    {{ return(result) }}
+{%- endmacro %}
+
 {% macro exasol__get_columns_in_relation(relation) -%}
   {% call statement('get_columns_in_relation', fetch_result=True) %}
       select
@@ -104,3 +109,14 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
   {{ return(sql_convert_columns_in_relation(table)) }}
 {% endmacro %}
 
+{% macro exasol__get_columns_in_query(select_sql) %}
+    {% call statement('get_columns_in_query', fetch_result=True, auto_begin=False) -%}
+        select * from (
+            {{ select_sql }}
+        ) as dbt_sbq
+        where false
+        limit 0
+    {% endcall %}
+
+    {{ return(load_result('get_columns_in_query').table.columns | map(attribute='name') | list) }}
+{% endmacro %}
