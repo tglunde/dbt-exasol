@@ -115,3 +115,22 @@
 {% macro exasol__post_snapshot(staging_relation) %}
     {% do adapter.drop_relation(staging_relation) %}
 {% endmacro %}
+
+{% macro build_snapshot_staging_table(strategy, sql, target_relation) %}
+    {% set tmp_relation = make_temp_relation(target_relation) %}
+    {% set inserts_select = snapshot_staging_table_inserts(strategy, sql, target_relation) %}
+    {% set updates_select = snapshot_staging_table_updates(strategy, sql, target_relation) %}
+
+    {% call statement('build_snapshot_staging_relation_inserts') %}
+        {{ create_table_as(True, tmp_relation, inserts_select) }}
+    {% endcall %}
+
+    {% call statement('build_snapshot_staging_relation_updates') %}
+        insert into {{ tmp_relation | replace('"', '')}} (dbt_change_type, dbt_scd_id, dbt_valid_to)
+        select dbt_change_type, dbt_scd_id, dbt_valid_to from (
+            {{ updates_select }}
+        ) dbt_sbq;
+    {% endcall %}
+
+    {% do return(tmp_relation) %}
+{% endmacro %}
