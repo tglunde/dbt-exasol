@@ -30,13 +30,7 @@
   {%- set identifier = model['alias'] -%}
   {%- set target_relation = api.Relation.create(identifier=identifier, schema=schema, database=database,  type='table') -%}
   {% set existing_relation = adapter.get_relation(database, schema, identifier) %}
-  {{ log(existing_relation ~ "-_-__"*20)}}
   {% set tmp_relation = make_temp_relation(target_relation) %}
-
-  {% do log(existing_relation ~ '-_._-'*20) %}
-  {% do log(target_relation ~ '-_._-'*20) %}
-
-  
 
   -- setup
   {{ run_hooks(pre_hooks, inside_transaction=False) }}
