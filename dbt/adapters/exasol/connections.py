@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from contextlib import contextmanager
 import time
 import dbt.exceptions
@@ -6,7 +7,8 @@ from dbt.adapters.sql import SQLConnectionManager
 from dbt.logger import GLOBAL_LOGGER as logger
 
 import pyexasol
-from pyexasol import ExaStatement , ExaConnection
+from pyexasol import ExaStatement, ExaConnection
+
 
 def connect(**kwargs):
     if 'autocommit' not in kwargs:
@@ -14,50 +16,30 @@ def connect(**kwargs):
 
     return DB2Connection(**kwargs)
 
+
 class DB2Connection(ExaConnection):
     def cursor(self):
         return ExasolCursor(self)
 
-EXASOL_CREDENTIALS_CONTRACT = {
-    'type': 'object',
-    'additionalProperties': False,
-    'properties': {
-        'dsn': {
-            'type': 'string',
-        },
-        'database': {
-            'type': 'string',
-        },
-        'schema': {
-            'type': 'string',
-        },
-        'user': {
-            'type': 'string',
-        },
-        'password': {
-            'type': 'string',
-        },
-    },
-    'required': ['dsn', 'user', 'password'],
-}
 
+@dataclass
 class ExasolCredentials(Credentials):
-    SCHEMA = EXASOL_CREDENTIALS_CONTRACT
+    dsn: str
+    user: str
+    password: str
+    database: str
+    schema: str
+
+    _ALIASES = {
+        'dbname': 'database',
+        'pass': 'password'
+    }
 
     @property
     def type(self):
         return 'exasol'
 
     def _connection_keys(self):
-        # return an iterator of keys to pretty-print in 'dbt debug'
-        raise NotImplementedError
-
-    @property
-    def type(self):
-        return 'exasol'
-
-    def _connection_keys(self):
-        # return an iterator of keys to pretty-print in 'dbt debug'
         return ('dsn', 'user', 'database', 'schema')
 
 
@@ -86,9 +68,10 @@ class ExasolConnectionManager(SQLConnectionManager):
         if connection.state == 'open':
             logger.debug('Connection is already open, skipping open.')
             return connection
-        credentials = cls.get_credentials(connection.credentials.incorporate())
+        credentials = cls.get_credentials(connection.credentials)
         try:
-            C = connect(dsn=credentials.dsn, user=credentials.user, password=credentials.password, autocommit=True)
+            C = connect(dsn=credentials.dsn, user=credentials.user,
+                        password=credentials.password, autocommit=True)
             connection.handle = C
             connection.state = 'open'
 
@@ -147,7 +130,7 @@ class ExasolConnectionManager(SQLConnectionManager):
         connection = self.get_thread_connection()
         if auto_begin and connection.transaction_open is False:
             self.begin()
-
+        logger.debug(sql)
         logger.debug('Using {} connection "{}".'
                      .format(self.TYPE, connection.name))
 
@@ -164,6 +147,7 @@ class ExasolConnectionManager(SQLConnectionManager):
                          self.get_status(cursor), (time.time() - pre))
 
             return connection, cursor
+
 
 class ExasolCursor(object):
     arraysize = 1

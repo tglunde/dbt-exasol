@@ -2,4 +2,4 @@
 name: dbt_exasol
 version: 1.0
 
-macro-paths: ["macros","macros/materializations"]
+macro-paths: ["macros"]

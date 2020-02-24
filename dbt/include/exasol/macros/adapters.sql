@@ -12,19 +12,20 @@ DROP_RELATION_MACRO_NAME = 'drop_relation'
 ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
  */
 
+
 {% macro exasol__list_relations_without_caching(information_schema, schema) %}
 {% call statement('list_relations_without_caching', fetch_result=True) -%}
     select
-      'DB' as [database],
-      table_name as [name],
-      table_schema as [schema],
-	    table_type as table_type
+      'db' as [database],
+      lower(table_name) as [name],
+      lower(table_schema) as [schema],
+  	  lower(table_type) as table_type
     from (
 		select table_name,table_schema,'table' as table_type from sys.exa_user_tables
 		union
 		select view_name, view_schema,'view' from sys.exa_user_views
 	  )
-    where table_schema = '{{ schema | upper }}'
+    where upper(table_schema) = '{{ schema |upper }}'
 {% endcall %}  
 {{ return(load_result('list_relations_without_caching').table) }}
 {% endmacro %}
@@ -37,7 +38,7 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
 {% endmacro %}
 
 {% macro exasol__create_schema(database_name, schema_name) -%}  
-  {%if adapter.check_schema_exists(database_name,schema_name) %}
+  {%if not adapter.check_schema_exists(database_name,schema_name) %}
     {% call statement('create_schema', fetch_result=True, auto_begin=False) -%}
       CREATE SCHEMA IF NOT EXISTS {{ schema_name | replace('"', "") }}
     {% endcall %}
@@ -60,7 +61,7 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
   {% call statement('check_schema_exists', fetch_result=True, auto_begin=False) -%}
     select count(*) as schema_exist from (
 		select schema_name as [schema] from exa_schemas
-    ) WHERE [schema] = '{{ schema }}'
+    ) WHERE upper([schema]) = '{{ schema | upper }}'
   {%- endcall %}
   {{ return(load_result('check_schema_exists').table) }}
 {% endmacro %}
@@ -79,26 +80,28 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
 {% macro exasol__create_table_as(temporary, relation, sql) -%}
     CREATE TABLE {{ relation.schema }}.{{ relation.identifier }} AS 
     {{ sql }}
-{% endmacro %}_
+{% endmacro %}
 
 {% macro exasol__current_timestamp() -%}
   current_timestamp
 {%- endmacro %}
 
+{% macro exasol__snapshot_string_as_time(timestamp) -%}
+    {%- set result = "to_timestamp('" ~ timestamp ~ "')" -%}
+    {{ return(result) }}
+{%- endmacro %}
+
 {% macro exasol__get_columns_in_relation(relation) -%}
   {% call statement('get_columns_in_relation', fetch_result=True) %}
       select
-          column_name,
+          lower(column_name) as column_name,
           column_type,
           column_maxsize,
           column_num_prec,
           column_num_scale
-
       from exa_user_columns
-      where column_table = '{{ relation.identifier|upper }}'
-        {% if relation.schema %}
-        and column_schema = '{{ relation.schema|upper }}'
-        {% endif %}
+      where upper(column_table) = '{{ relation.identifier|upper }}'
+        and upper(column_schema) = '{{ relation.schema|upper }}'
       order by column_ordinal_position
 
   {% endcall %}
@@ -106,3 +109,14 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
   {{ return(sql_convert_columns_in_relation(table)) }}
 {% endmacro %}
 
+{% macro exasol__get_columns_in_query(select_sql) %}
+    {% call statement('get_columns_in_query', fetch_result=True, auto_begin=False) -%}
+        select * from (
+            {{ select_sql }}
+        ) as dbt_sbq
+        where false
+        limit 0
+    {% endcall %}
+
+    {{ return(load_result('get_columns_in_query').table.columns | map(attribute='name') | list) }}
+{% endmacro %}
