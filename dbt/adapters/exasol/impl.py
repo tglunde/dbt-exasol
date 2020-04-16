@@ -7,6 +7,7 @@ from dbt.logger import GLOBAL_LOGGER as logger
 from dbt.utils import filter_null_values
 import dbt.flags
 from typing import Dict
+import agate
 
 
 class ExasolAdapter(SQLAdapter):
@@ -45,3 +46,10 @@ class ExasolAdapter(SQLAdapter):
             'identifier': identifier,
             'schema': schema,
         })
+
+    @classmethod
+    def convert_number_type(
+        cls, agate_table: agate.Table, col_idx: int
+    ) -> str:
+        decimals = agate_table.aggregate(agate.MaxPrecision(col_idx))
+        return "float" if decimals else "integer"
