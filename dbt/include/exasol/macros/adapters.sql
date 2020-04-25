@@ -91,6 +91,12 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
     {{ return(result) }}
 {%- endmacro %}
 
+{% macro exasol__truncate_relation(relation) -%}
+  {% call statement('truncate_relation') -%}
+    truncate table {{ relation | replace('"', '') }}
+  {%- endcall %}
+{% endmacro %}
+
 {% macro exasol__get_columns_in_relation(relation) -%}
   {% call statement('get_columns_in_relation', fetch_result=True) %}
       select

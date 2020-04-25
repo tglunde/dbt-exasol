@@ -1,1 +1,1 @@
-pyexasol
+pyexasol>=0.11

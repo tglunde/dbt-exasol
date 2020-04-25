@@ -13,6 +13,7 @@ setup(
     long_description=description,
     author='Torsten Glunde',
     author_email='torsten@glunde.de',
+    maintainer='Ilija Kutle',
     url='https://www.glunde.de',
     packages=find_packages(),
     package_data={
@@ -24,6 +25,6 @@ setup(
     },
     install_requires=[
        'dbt-core>={}'.format('0.15.0'),
-        'pyexasol==0.6.3' 
+       'pyexasol>='.format('0.11')
     ]
 )
