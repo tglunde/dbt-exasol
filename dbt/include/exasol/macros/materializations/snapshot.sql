@@ -1,4 +1,4 @@
-{% macro build_snapshot_table(strategy, sql) %}
+{% macro exasol__build_snapshot_table(strategy, sql) %}
 
     select sbq.*,
         {{ strategy.scd_id }} as dbt_scd_id,
@@ -11,7 +11,7 @@
 
 {% endmacro %}
 
-{% macro snapshot_staging_table_inserts(strategy, source_sql, target_relation) -%}
+{% macro exasol__snapshot_staging_table_inserts(strategy, source_sql, target_relation) -%}
 
     with snapshot_query as (
 
@@ -63,7 +63,7 @@
 
 {%- endmacro %}
 
-{% macro snapshot_staging_table_updates(strategy, source_sql, target_relation) -%}
+{% macro exasol__snapshot_staging_table_updates(strategy, source_sql, target_relation) -%}
 
     with snapshot_query as (
 
@@ -116,7 +116,7 @@
     {% do adapter.drop_relation(staging_relation) %}
 {% endmacro %}
 
-{% macro build_snapshot_staging_table(strategy, sql, target_relation) %}
+{% macro exasol__build_snapshot_staging_table(strategy, sql, target_relation) %}
     {% set tmp_relation = make_temp_relation(target_relation) %}
     {% set inserts_select = snapshot_staging_table_inserts(strategy, sql, target_relation) %}
     {% set updates_select = snapshot_staging_table_updates(strategy, sql, target_relation) %}

@@ -4,7 +4,7 @@
     {% endfor %})
 {% endmacro %}
 
-{% macro snapshot_check_all_get_existing_columns(node, target_exists) -%}
+{% macro exasol__snapshot_check_all_get_existing_columns(node, target_exists) -%}
     {%- set query_columns = get_columns_in_query(node['injected_sql']) -%}
     {%- if not target_exists -%}
         {# no table yet -> return whatever the query does #}
