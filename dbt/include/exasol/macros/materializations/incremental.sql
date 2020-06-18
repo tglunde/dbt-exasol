@@ -4,8 +4,8 @@
   {% if unique_key is not none %}
     delete
     from {{ target_relation }}
-    where ({{ unique_key }}) in (
-      select ({{ unique_key }})
+    where ("{{ unique_key }}") in (
+      select ("{{ unique_key }}")
       from {{ tmp_relation.schema }}.{{tmp_relation.identifier}}
   );
   {%endif%}
@@ -29,7 +29,7 @@
   {%- set full_refresh_mode = (flags.FULL_REFRESH == True) -%}
   {%- set identifier = model['alias'] -%}
   {%- set target_relation = api.Relation.create(identifier=identifier, schema=schema, database=database,  type='table') -%}
-  {% set existing_relation = adapter.get_relation(database, schema, identifier) %}
+  {% set existing_relation = adapter.get_relation(database=database, schema=schema, identifier = identifier) %}
   {% set tmp_relation = make_temp_relation(target_relation) %}
 
   -- setup
