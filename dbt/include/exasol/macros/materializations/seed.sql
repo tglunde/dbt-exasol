@@ -1,4 +1,4 @@
-{% macro basic_load_csv_rows(model, batch_size, agate_table) %}
+{% macro exasol__basic_load_csv_rows(model, batch_size, agate_table) %}
     {% set cols_sql = get_seed_column_quoted_csv(model, agate_table.column_names) %}
     {% set bindings = [] %}
 
@@ -34,4 +34,8 @@
 
     {# Return SQL so we can render it out into the compiled files #}
     {{ return(statements[0]) }}
+{% endmacro %}
+
+{% macro exasol__load_csv_rows(model, agate_table) %}
+  {{ return(exasol__basic_load_csv_rows(model, 10000, agate_table) )}}
 {% endmacro %}

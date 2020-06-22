@@ -1,3 +1,4 @@
 {% materialization view, adapter='exasol' -%}
-    {{ create_or_replace_view() }}
+    {{ return(create_or_replace_view()) }}
+    
 {%- endmaterialization %}
