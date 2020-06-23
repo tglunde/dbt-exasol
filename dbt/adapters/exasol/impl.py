@@ -6,10 +6,8 @@ from dbt.adapters.exasol import ExasolRelation
 from dbt.logger import GLOBAL_LOGGER as logger
 from dbt.utils import filter_null_values
 import dbt.flags
-from typing import Dict, List
+from typing import Dict
 import agate
-
-LIST_RELATIONS_MACRO_NAME = 'list_relations_without_caching'
 
 
 class ExasolAdapter(SQLAdapter):
@@ -30,35 +28,6 @@ class ExasolAdapter(SQLAdapter):
         lens = (len(d.encode("utf-8")) for d in column.values_without_nulls())
         max_len = max(lens) if lens else 64
         return "varchar({})".format(max_len)
-
-    def list_relations_without_caching(
-        self, schema_relation: ExasolRelation,
-    ) -> List[ExasolRelation]:
-        kwargs = {'schema_relation': schema_relation}
-        results = self.execute_macro(
-            LIST_RELATIONS_MACRO_NAME,
-            kwargs=kwargs
-        )
-
-        relations = []
-        quote_policy = {
-            'database': False,
-            'schema': False,
-            'identifier': False
-        }
-        for _database, name, _schema, _type in results:
-            try:
-                _type = self.Relation.get_relation_type(_type)
-            except ValueError:
-                _type = self.Relation.External
-            relations.append(self.Relation.create(
-                database=_database,
-                schema=_schema,
-                identifier=name,
-                quote_policy=quote_policy,
-                type=_type
-            ))
-        return relations
 
     def _make_match_kwargs(
         self, database: str, schema: str, identifier: str

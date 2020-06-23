@@ -31,6 +31,7 @@ class ExasolRelation(BaseRelation):
         schema: Optional[str] = None,
         identifier: Optional[str] = None,
         type: Optional[RelationType] = None,
+        quote_policy: Type[ExasolQuotePolicy] = quote_policy,
         **kwargs,
     ) -> Self:
         kwargs.update({
