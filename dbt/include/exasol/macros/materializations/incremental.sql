@@ -4,8 +4,8 @@
   {% if unique_key is not none %}
     delete
     from {{ target_relation }}
-    where ("{{ unique_key }}") in (
-      select ("{{ unique_key }}")
+    where ({{ unique_key }}) in (
+      select ({{ unique_key }})
       from {{ tmp_relation.schema }}.{{tmp_relation.identifier}}
   );
   {%endif%}
