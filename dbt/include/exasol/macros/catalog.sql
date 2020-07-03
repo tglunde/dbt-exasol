@@ -45,7 +45,6 @@
     from tabs
     join cols on tabs.table_database = cols.table_database and tabs.table_schema = cols.table_schema and tabs.table_name = cols.table_name
     order by column_index
-    {{ log('-----------------------------------------------------------------------------------------_')}}
   {%- endcall -%}
 
   {{ return(load_result('catalog').table) }}
