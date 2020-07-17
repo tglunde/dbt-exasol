@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/home/torsten/project/env/bin/python",
+    "python.pythonPath": "/home/torsten/.cache/pypoetry/virtualenvs/samplestack-Oe29XQGw-py3.8/bin/python",
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true
 }
