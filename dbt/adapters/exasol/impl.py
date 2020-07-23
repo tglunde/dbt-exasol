@@ -24,10 +24,7 @@ class ExasolAdapter(SQLAdapter):
 
     @classmethod
     def convert_text_type(cls, agate_table, col_idx):
-        column = agate_table.columns[col_idx]
-        lens = (len(d.encode("utf-8")) for d in column.values_without_nulls())
-        max_len = max(lens) if lens else 64
-        return "varchar({})".format(max_len)
+        return "varchar({})".format(2000000)
 
     def _make_match_kwargs(
         self, database: str, schema: str, identifier: str

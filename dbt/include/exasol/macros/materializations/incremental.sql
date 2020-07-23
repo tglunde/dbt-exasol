@@ -1,5 +1,5 @@
 {% macro incremental_delete(target_relation, tmp_relation) -%}
-  {%- set unique_key = config.require('unique_key') -%}
+  {%- set unique_key = config.get('unique_key') -%}
 
   {% if unique_key is not none %}
     delete
@@ -25,7 +25,7 @@
 
 {% materialization incremental, adapter='exasol' -%}
 
-  {%- set unique_key = config.require('unique_key') -%}
+  {%- set unique_key = config.get('unique_key') -%}
   {%- set full_refresh_mode = (flags.FULL_REFRESH == True) -%}
   {%- set identifier = model['alias'] -%}
   {%- set target_relation = api.Relation.create(identifier=identifier, schema=schema, database=database,  type='table') -%}
