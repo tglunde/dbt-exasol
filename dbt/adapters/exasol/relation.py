@@ -42,3 +42,7 @@ class ExasolRelation(BaseRelation):
             'type': type,
         })
         return cls.from_dict(kwargs)
+
+    @staticmethod
+    def add_ephemeral_prefix(name: str):
+        return f'dbt__CTE__{name}'
