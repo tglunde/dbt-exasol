@@ -122,6 +122,10 @@ class ExasolConnectionManager(SQLConnectionManager):
         return 'OK'
 
     @classmethod
+    def get_response(cls, cursor):
+        return 'SUCCESS'
+
+    @classmethod
     def get_credentials(cls, credentials):
         return credentials
 
