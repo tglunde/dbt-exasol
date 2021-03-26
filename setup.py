@@ -3,7 +3,7 @@ from setuptools import find_packages
 from distutils.core import setup
 
 package_name = "dbt-exasol"
-package_version = "0.2.0"
+package_version = "0.3.0"
 description = """The exasol adpter plugin for dbt (data build tool)"""
 
 setup(
@@ -24,7 +24,7 @@ setup(
         ]
     },
     install_requires=[
-       'dbt-core>={}'.format('0.18.0'),
+       'dbt-core>={}'.format('0.19.0'),
        'pyexasol>='.format('0.11')
     ]
 )
