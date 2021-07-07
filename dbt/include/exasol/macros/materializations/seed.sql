@@ -6,19 +6,15 @@
 
     {% for chunk in agate_table.rows | batch(batch_size) %}
         {% set bindings = [] %}
-        {{log(chunk)}}
         {% for row in chunk %}
           {% do bindings.extend(row) %}
-          {{log(row)}}
         {% endfor %}
-        {{log(bindings)}}
-        {{log(agate_table.column_names)}}
 
         {% set sql %}
             insert into {{ this.render() }} ({{ cols_sql }}) values
             {% for row in chunk -%}
                 ({%- for column in agate_table.column_names -%}
-                    {{"'" ~ row[column] ~"'"}}
+                    {{"'" ~ row[column] | replace("'", "''") ~"'"}}
                     {%- if not loop.last%},{%- endif %}
                 {%- endfor -%})
                 {%- if not loop.last%},{%- endif %}
