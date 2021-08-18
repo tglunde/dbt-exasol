@@ -20,9 +20,10 @@
             {% for row in chunk -%}
                 ({%- for column in agate_table.column_names -%}
                     {% set col_type = agate_table.columns[column].data_type | string %}
+                    {%- if row[column] is none -%} NULL {%- else -%}
                     {%- if "text.Text" in col_type -%}
-                      '{{replace_quotes(row[column]) if row[column]}}' {% else %} '{{ row[column] if row[column] }}'
-                    {%- endif -%}
+                      '{{replace_quotes(row[column]) if row[column]}}' {% else %} '{{ row[column] }}'
+                    {%- endif -%}{%- endif -%}
                     {%- if not loop.last%},{%- endif %}
                 {%- endfor -%})
                 {%- if not loop.last%}{{','+'\n'}}{%- endif %}
