@@ -148,8 +148,8 @@ class ExasolConnectionManager(SQLConnectionManager):
         logger.debug(sql)
         logger.debug('Using {} connection "{}".'.format(self.TYPE, connection.name))
 
-        if sql.startswith('CSV'):
-            connection.handle.cursor().import_from_pandas(bindings, sql.split('|',1)[1])
+        if sql.startswith('0CSV|'):
+            connection.handle.cursor().import_from_file(bindings, sql.split('|',1)[1])
 
             return connection
 
@@ -174,8 +174,11 @@ class ExasolCursor(object):
         self.connection = connection
         self.stmt = None
 
-    def import_from_pandas(self, agate_table, table):
-        self.connection.import_from_file(agate_table.original_abspath, (table.split('.')[0], table.split('.')[1]), import_params={'skip': 1})
+    def import_from_file(self, agate_table, table):
+        self.connection.import_from_file(
+            agate_table.original_abspath, 
+            (table.split('.')[0], table.split('.')[1]),
+            import_params={'skip': 1})
 
 
     def execute(self, query):
