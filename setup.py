@@ -3,7 +3,7 @@ from setuptools import find_packages
 from distutils.core import setup
 
 package_name = "dbt-exasol"
-package_version = "0.5.0"
+package_version = "1.0.0"
 description = """The exasol adpter plugin for dbt (data build tool)"""
 
 setup(
