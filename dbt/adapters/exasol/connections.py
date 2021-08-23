@@ -139,6 +139,7 @@ class ExasolConnectionManager(SQLConnectionManager):
     def get_credentials(cls, credentials):
         return credentials
 
+
     def add_query(self, sql, auto_begin=True, bindings=None,
                   abridge_sql_log=False):
         connection = self.get_thread_connection()
@@ -146,6 +147,11 @@ class ExasolConnectionManager(SQLConnectionManager):
             self.begin()
         logger.debug(sql)
         logger.debug('Using {} connection "{}".'.format(self.TYPE, connection.name))
+
+        if sql.startswith('0CSV|'):
+            connection.handle.cursor().import_from_file(bindings, sql.split('|',1)[1])
+
+            return connection
 
         with self.exception_handler(sql):
             if abridge_sql_log:
@@ -167,6 +173,13 @@ class ExasolCursor(object):
     def __init__(self, connection):
         self.connection = connection
         self.stmt = None
+
+    def import_from_file(self, agate_table, table):
+        self.connection.import_from_file(
+            agate_table.original_abspath, 
+            (table.split('.')[0], table.split('.')[1]),
+            import_params={'skip': 1})
+
 
     def execute(self, query):
         self.stmt = self.connection.execute(query)
