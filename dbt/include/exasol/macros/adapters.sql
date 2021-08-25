@@ -98,7 +98,7 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
 {% macro exasol__get_columns_in_relation(relation) -%}
   {% call statement('get_columns_in_relation', fetch_result=True) %}
       select
-          lower(column_name) as column_name,
+          column_name,
           column_type,
           column_maxsize,
           column_num_prec,
