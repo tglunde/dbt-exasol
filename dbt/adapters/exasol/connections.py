@@ -36,7 +36,7 @@ class ExasolCredentials(Credentials):
     password: str
     database: str
     schema: str
-    protocol_version: str = '3'
+    protocol_version: str = "v3"
 
     _ALIASES = {
         'dbname': 'database',
@@ -84,7 +84,8 @@ class ExasolConnectionManager(SQLConnectionManager):
 
         # Support protocol versions
         try:
-            version = ProtocolVersionType(credentials.protocol_version)
+            format_protocol_version = credentials.protocol_version.lower()
+            version = ProtocolVersionType(format_protocol_version)
 
             if version == ProtocolVersionType.V1:
                 protocol_version = pyexasol.PROTOCOL_V1

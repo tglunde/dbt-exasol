@@ -13,9 +13,9 @@ class RelationType(StrEnum):
 
 
 class ProtocolVersionType(StrEnum):
-    V1 = '1'
-    V2 = '2'
-    V3 = '3'
+    V1 = 'v1'
+    V2 = 'v2'
+    V3 = 'v3'
 
 
 @dataclass
