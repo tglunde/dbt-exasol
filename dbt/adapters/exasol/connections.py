@@ -84,7 +84,7 @@ class ExasolConnectionManager(SQLConnectionManager):
 
         # Support protocol versions
         try:
-            version = ProtocolVersionType[credentials.protocol_version]
+            version = ProtocolVersionType(credentials.protocol_version)
 
             if version == ProtocolVersionType.V1:
                 protocol_version = pyexasol.PROTOCOL_V1
