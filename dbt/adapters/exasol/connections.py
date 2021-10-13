@@ -45,6 +45,10 @@ class ExasolCredentials(Credentials):
     def type(self):
         return 'exasol'
 
+    @property
+    def unique_field(self):
+        return self.dsn
+
     def _connection_keys(self):
         return ('dsn', 'user', 'database', 'schema')
 
