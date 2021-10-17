@@ -103,7 +103,7 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
           column_maxsize,
           column_num_prec,
           column_num_scale
-      from exa_user_columns
+      from exa_all_columns
       where upper(column_table) = '{{ relation.identifier|upper }}'
         and upper(column_schema) = '{{ relation.schema|upper }}'
       order by column_ordinal_position
