@@ -21,9 +21,9 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
       lower(table_schema) as [schema],
   	  lower(table_type) as table_type
     from (
-		select table_name,table_schema,'table' as table_type from sys.exa_user_tables
+		select table_name,table_schema,'table' as table_type from sys.exa_all_tables
 		union
-		select view_name, view_schema,'view' from sys.exa_user_views
+		select view_name, view_schema,'view' from sys.exa_all_views
 	  )
     where upper(table_schema) = '{{ schema |upper }}'
 {% endcall %}  
@@ -76,7 +76,7 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
 {% endmacro %}
 
 {% macro exasol__create_table_as(temporary, relation, sql) -%}
-    CREATE TABLE {{ relation.schema }}.{{ relation.identifier }} AS 
+    CREATE OR REPLACE TABLE {{ relation.schema }}.{{ relation.identifier }} AS 
     {{ sql }}
 {% endmacro %}
 
