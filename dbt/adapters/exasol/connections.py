@@ -4,6 +4,7 @@ import time
 import dbt.exceptions
 from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager
+from dbt.adapters.exasol.relation import ProtocolVersionType
 from dbt.logger import GLOBAL_LOGGER as logger
 from dbt.contracts.connection import AdapterResponse
 from typing import Optional
@@ -35,6 +36,7 @@ class ExasolCredentials(Credentials):
     password: str
     database: str
     schema: str
+    protocol_version: str = "v3"
 
     _ALIASES = {
         'dbname': 'database',
@@ -45,8 +47,12 @@ class ExasolCredentials(Credentials):
     def type(self):
         return 'exasol'
 
+    @property
+    def unique_field(self):
+        return self.dsn
+
     def _connection_keys(self):
-        return ('dsn', 'user', 'database', 'schema')
+        return ('dsn', 'user', 'database', 'schema', 'protocol_version')
 
 
 class ExasolConnectionManager(SQLConnectionManager):
@@ -75,9 +81,26 @@ class ExasolConnectionManager(SQLConnectionManager):
             logger.debug('Connection is already open, skipping open.')
             return connection
         credentials = cls.get_credentials(connection.credentials)
+
+        # Support protocol versions
+        try:
+            format_protocol_version = credentials.protocol_version.lower()
+            version = ProtocolVersionType(format_protocol_version)
+
+            if version == ProtocolVersionType.V1:
+                protocol_version = pyexasol.PROTOCOL_V1
+            elif version == ProtocolVersionType.V2:
+                protocol_version = pyexasol.PROTOCOL_V2
+            else:
+                protocol_version = pyexasol.PROTOCOL_V3    
+        except:
+            raise dbt.exceptions.RuntimeException(f"{credentials.protocol_version} is not a valid protocol version.")
+
+
+
         try:
             C = connect(dsn=credentials.dsn, user=credentials.user,
-                        password=credentials.password, autocommit=True)
+                        password=credentials.password, autocommit=True, protocol_version=protocol_version)
             connection.handle = C
             connection.state = 'open'
 

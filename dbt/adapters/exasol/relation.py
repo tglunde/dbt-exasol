@@ -11,6 +11,13 @@ class RelationType(StrEnum):
     MaterializedView = 'materializedview'
     External = 'external'
 
+
+class ProtocolVersionType(StrEnum):
+    V1 = 'v1'
+    V2 = 'v2'
+    V3 = 'v3'
+
+
 @dataclass
 class ExasolQuotePolicy(Policy):
     database: bool = False
