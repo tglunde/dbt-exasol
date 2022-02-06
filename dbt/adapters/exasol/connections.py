@@ -36,6 +36,21 @@ class ExasolCredentials(Credentials):
     password: str
     database: str
     schema: str
+    # optional statements that can be set in profiles.yml
+    # some options might interfere with dbt, so caution is advised
+    connection_timeout: int = pyexasol.constant.DEFAULT_CONNECTION_TIMEOUT
+    socket_timeout: int = pyexasol.constant.DEFAULT_SOCKET_TIMEOUT 
+    query_timeout: int = pyexasol.constant.DEFAULT_QUERY_TIMEOUT
+    compression: bool = False
+    encryption: bool = False
+    ## Because of potential interference with dbt, the following statements are not (yet) implemented
+    # fetch_dict: bool
+    # fetch_size_bytes: int
+    # lower_ident: bool
+    # quote_ident: bool
+    # verbose_error: bool
+    # debug: bool
+    # udf_output_port: int
     protocol_version: str = "v3"
 
     _ALIASES = {
@@ -52,7 +67,9 @@ class ExasolCredentials(Credentials):
         return self.dsn
 
     def _connection_keys(self):
-        return ('dsn', 'user', 'database', 'schema', 'protocol_version')
+        return ('dsn', 'user', 'database', 'schema', 
+        'connection_timeout', 'socket_timeout', 'query_timeout', 'compression', 'encryption',
+        'protocol_version')
 
 
 class ExasolConnectionManager(SQLConnectionManager):
@@ -96,11 +113,18 @@ class ExasolConnectionManager(SQLConnectionManager):
         except:
             raise dbt.exceptions.RuntimeException(f"{credentials.protocol_version} is not a valid protocol version.")
 
-
-
         try:
-            C = connect(dsn=credentials.dsn, user=credentials.user,
-                        password=credentials.password, autocommit=True, protocol_version=protocol_version)
+            C = connect(
+                dsn=credentials.dsn,
+                user=credentials.user,
+                password=credentials.password,
+                autocommit=True,
+                connection_timeout=credentials.connection_timeout,
+                socket_timeout=credentials.socket_timeout,
+                query_timeout=credentials.query_timeout,
+                compression=credentials.compression,
+                encryption=credentials.encryption,
+                protocol_version=protocol_version)
             connection.handle = C
             connection.state = 'open'
 
