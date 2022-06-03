@@ -132,7 +132,6 @@
     {%- if strategy.invalidate_hard_deletes %}
     union all
     select * from deletes
-
     {%- endif %}
 
 {%- endmacro %}
