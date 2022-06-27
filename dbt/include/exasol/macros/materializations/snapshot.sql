@@ -25,6 +25,7 @@
             {{ strategy.unique_key }} as dbt_unique_key
 
         from {{ target_relation | upper }} tgt
+        where dbt_valid_to is null
 
     ),
 
@@ -108,7 +109,30 @@
 
     )
 
+    {%- if strategy.invalidate_hard_deletes -%}
+    ,
+
+    deletes as (
+
+        select
+            'delete' as dbt_change_type,
+            snapshotted_data.dbt_scd_id,
+            {{ snapshot_get_time() }} as dbt_valid_to
+
+        from snapshotted_data
+        left join source_data on snapshotted_data.dbt_unique_key = source_data.dbt_unique_key
+        where
+            snapshotted_data.dbt_valid_to is null
+            and source_data.dbt_unique_key is null
+    )
+    {%- endif %}
+
     select * from updates
+
+    {%- if strategy.invalidate_hard_deletes %}
+    union all
+    select * from deletes
+    {%- endif %}
 
 {%- endmacro %}
 

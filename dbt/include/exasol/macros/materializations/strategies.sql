@@ -31,6 +31,7 @@
 {% macro exasol__snapshot_check_strategy(node, snapshotted_rel, current_rel, config, target_exists) %}
     {% set check_cols_config = config['check_cols'] %}
     {% set primary_key = config['unique_key'] %}
+    {% set invalidate_hard_deletes = config['invalidate_hard_deletes'] %}
     {% set select_current_time -%}
         select {{ snapshot_get_time() }} as snapshot_start
     {%- endset %}
@@ -73,6 +74,7 @@
         "unique_key": primary_key,
         "updated_at": updated_at,
         "row_changed": row_changed_expr,
-        "scd_id": scd_id_expr
+        "scd_id": scd_id_expr,
+        "invalidate_hard_deletes": invalidate_hard_deletes
     }) %}
 {% endmacro %}
