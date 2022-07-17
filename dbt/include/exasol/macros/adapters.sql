@@ -127,7 +127,7 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
 
 {% macro exasol__alter_relation_comment(relation, relation_comment) -%}
   {%- set comment = relation_comment | replace("'", '"') %}
-  comment on {{ relation.type }} {{ relation }} IS '{{ comment }}';
+  COMMENT ON {{ relation.type }} {{ relation }} IS '{{ comment }}';
 {% endmacro %}
 
 {% macro get_column_comment_sql(column_name, column_dict) -%}
@@ -150,7 +150,7 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
 
 {% macro exasol__alter_column_comment(relation, column_dict) -%}
     {% set existing_columns = adapter.get_columns_in_relation(relation) | map(attribute="name") | list %}
-    comment on {{ relation.type }} {{ relation }} (
+    COMMENT ON {{ relation.type }} {{ relation }} (
     {% for column_name in existing_columns if (column_name in existing_columns) or (column_name|lower in existing_columns) %}
         {{ get_column_comment_sql(column_name, column_dict) }} {{- ',' if not loop.last }}
     {% endfor %}
