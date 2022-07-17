@@ -124,3 +124,35 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
 
     {{ return(load_result('get_columns_in_query').table.columns | map(attribute='name') | list) }}
 {% endmacro %}
+
+{% macro exasol__alter_relation_comment(relation, relation_comment) -%}
+  {%- set comment = relation_comment | replace("'", '"') %}
+  comment on {{ relation.type }} {{ relation }} IS '{{ comment }}';
+{% endmacro %}
+
+{% macro get_column_comment_sql(column_name, column_dict) -%}
+  {% if (column_name|upper in column_dict) -%}
+    {% set matched_column = column_name|upper -%}
+  {% elif (column_name|lower in column_dict) -%}
+    {% set matched_column = column_name|lower -%}
+  {% elif (column_name in column_dict) -%}
+    {% set matched_column = column_name -%}
+  {% else -%}
+    {% set matched_column = None -%}
+  {% endif -%}
+  {% if matched_column -%}
+    {%- set comment = column_dict[matched_column]['description'] | replace("'", '"') %}
+    {{ adapter.quote(column_name) }} IS '{{ comment }}'
+  {%- else -%}
+    {{ adapter.quote(column_name) }} IS ''
+  {%- endif -%}
+{% endmacro %}
+
+{% macro exasol__alter_column_comment(relation, column_dict) -%}
+    {% set existing_columns = adapter.get_columns_in_relation(relation) | map(attribute="name") | list %}
+    comment on {{ relation.type }} {{ relation }} (
+    {% for column_name in existing_columns if (column_name in existing_columns) or (column_name|lower in existing_columns) %}
+        {{ get_column_comment_sql(column_name, column_dict) }} {{- ',' if not loop.last }}
+    {% endfor %}
+    );
+{% endmacro %}
