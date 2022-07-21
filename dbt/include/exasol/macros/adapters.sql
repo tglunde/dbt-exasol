@@ -99,21 +99,16 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
 {% endmacro %}
 
 {% macro exasol__get_columns_in_relation(relation) -%}
-  {% call statement('get_columns_in_relation', fetch_result=True) %}
-      select
-          column_name,
-          column_type,
-          column_maxsize,
-          column_num_prec,
-          column_num_scale
-      from exa_all_columns
-      where upper(column_table) = '{{ relation.identifier|upper }}'
-        and upper(column_schema) = '{{ relation.schema|upper }}'
-      order by column_ordinal_position
+  {%- set sql -%}
+    describe {{ relation }}
+  {%- endset -%}
+  {%- set result = run_query(sql) -%}
 
-  {% endcall %}
-  {% set table = load_result('get_columns_in_relation').table %}
-  {{ return(sql_convert_columns_in_relation(table)) }}
+  {% set columns = [] %}
+  {% for row in result %}
+    {% do columns.append(api.Column.from_description(row[0], row[1])) %}
+  {% endfor %}
+  {% do return(columns) %}
 {% endmacro %}
 
 {% macro exasol__get_columns_in_query(select_sql) %}

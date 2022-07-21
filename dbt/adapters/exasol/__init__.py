@@ -1,5 +1,6 @@
 from dbt.adapters.exasol.connections import ExasolConnectionManager
 from dbt.adapters.exasol.connections import ExasolCredentials
+from dbt.adapters.exasol.column import ExasolColumn
 from dbt.adapters.exasol.relation import ExasolRelation
 from dbt.adapters.exasol.impl import ExasolAdapter
 
@@ -10,4 +11,5 @@ from dbt.include import exasol
 Plugin = AdapterPlugin(
     adapter=ExasolAdapter,
     credentials=ExasolCredentials,
-    include_path=exasol.PACKAGE_PATH)
+    include_path=exasol.PACKAGE_PATH,
+)
