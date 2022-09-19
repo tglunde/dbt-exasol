@@ -1,0 +1,46 @@
+version: "3.9"
+
+volumes:
+  dev_command_his:
+  dev_exasol:
+
+networks:
+  base:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: ${NETWORK__BASE_SUBNET:-172.10.2.0/24}
+
+services:
+  #######################################################
+  #   D E V C O N T A I N E R
+  #######################################################
+  devcontainer:
+    build:
+      context: .devcontainer
+      dockerfile: Dockerfile
+    init: true
+    privileged: true
+
+    volumes:
+      - .:/workspace
+      - dev_command_his:/commandhistory
+    networks:
+      base:
+
+  #######################################################
+  #   E X A S O L
+  #######################################################
+  exasol:
+    image: exasol/docker-db:${EXASOL__TAG}
+    restart: unless-stopped
+    volumes:
+      - dev_exasol:/exa
+    ports:
+      - "127.0.0.1:${EXASOL__LOCAL_PORT:-8563}:8563"
+    privileged: true
+    networks:
+      base:
+        # static ip for Exasol container
+        ipv4_address: ${EXASOL__LOCAL_IP:-172.10.2.5}
