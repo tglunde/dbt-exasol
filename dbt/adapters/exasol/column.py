@@ -9,7 +9,7 @@ from dbt.exceptions import RuntimeException
 class ExasolColumn(Column):
     # https://docs.exasol.com/db/latest/sql_references/data_types/datatypealiases.htm
     TYPE_LABELS: ClassVar[Dict[str, str]] = {
-        "STRING": "VARCHAR(200000) UTF8",
+        "STRING": "VARCHAR(2000000) UTF8",
         "TIMESTAMP": "TIMESTAMP",
         "FLOAT": "DOUBLE PRECISION",
         "INTEGER": "DECIMAL(18,0)",
