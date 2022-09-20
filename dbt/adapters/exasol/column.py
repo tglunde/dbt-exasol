@@ -1,12 +1,22 @@
 import re
 from dataclasses import dataclass
-
+from typing import ClassVar, Dict
 from dbt.adapters.base.column import Column
 from dbt.exceptions import RuntimeException
 
 
 @dataclass
 class ExasolColumn(Column):
+    # https://docs.exasol.com/db/latest/sql_references/data_types/datatypealiases.htm
+    TYPE_LABELS: ClassVar[Dict[str, str]] = {
+        "STRING": "VARCHAR(200000) UTF8",
+        "TIMESTAMP": "TIMESTAMP",
+        "FLOAT": "DOUBLE PRECISION",
+        "INTEGER": "DECIMAL(18,0)",
+        "BIGINT": "DECIMAL(36,0)",
+        "NUMERIC": "DECIMAL(18,9)",
+    }
+
     def is_integer(self) -> bool:
         # everything that smells like an int is actually a DECIMAL(18, 0)
         return True if self.is_numeric() and self.numeric_scale == 0 else False
