@@ -1,22 +1,21 @@
-from dataclasses import dataclass
-from contextlib import contextmanager
 import time
-import dbt.exceptions
-from dbt.adapters.base import Credentials
-from dbt.adapters.sql import SQLConnectionManager
-from dbt.adapters.exasol.relation import ProtocolVersionType
-from dbt.logger import GLOBAL_LOGGER as logger
-from dbt.contracts.connection import AdapterResponse
+from contextlib import contextmanager
+from dataclasses import dataclass
 from typing import Optional
 
-
+import dbt.exceptions
 import pyexasol
-from pyexasol import ExaStatement, ExaConnection
+from dbt.adapters.base import Credentials
+from dbt.adapters.exasol.relation import ProtocolVersionType
+from dbt.adapters.sql import SQLConnectionManager
+from dbt.contracts.connection import AdapterResponse
+from dbt.logger import GLOBAL_LOGGER as logger
+from pyexasol import ExaConnection
 
 
 def connect(**kwargs):
-    if 'autocommit' not in kwargs:
-        kwargs['autocommit'] = False
+    if "autocommit" not in kwargs:
+        kwargs["autocommit"] = False
 
     return DB2Connection(**kwargs)
 
@@ -25,9 +24,11 @@ class DB2Connection(ExaConnection):
     def cursor(self):
         return ExasolCursor(self)
 
+
 @dataclass
 class ExasolAdapterResponse(AdapterResponse):
     execution_time: Optional[float] = None
+
 
 @dataclass
 class ExasolCredentials(Credentials):
@@ -39,7 +40,7 @@ class ExasolCredentials(Credentials):
     # optional statements that can be set in profiles.yml
     # some options might interfere with dbt, so caution is advised
     connection_timeout: int = pyexasol.constant.DEFAULT_CONNECTION_TIMEOUT
-    socket_timeout: int = pyexasol.constant.DEFAULT_SOCKET_TIMEOUT 
+    socket_timeout: int = pyexasol.constant.DEFAULT_SOCKET_TIMEOUT
     query_timeout: int = pyexasol.constant.DEFAULT_QUERY_TIMEOUT
     compression: bool = False
     encryption: bool = False
@@ -52,28 +53,35 @@ class ExasolCredentials(Credentials):
     # debug: bool
     # udf_output_port: int
     protocol_version: str = "v3"
+    retries: int = 1
 
-    _ALIASES = {
-        'dbname': 'database',
-        'pass': 'password'
-    }
+    _ALIASES = {"dbname": "database", "pass": "password"}
 
     @property
     def type(self):
-        return 'exasol'
+        return "exasol"
 
     @property
     def unique_field(self):
         return self.dsn
 
     def _connection_keys(self):
-        return ('dsn', 'user', 'database', 'schema', 
-        'connection_timeout', 'socket_timeout', 'query_timeout', 'compression', 'encryption',
-        'protocol_version')
+        return (
+            "dsn",
+            "user",
+            "database",
+            "schema",
+            "connection_timeout",
+            "socket_timeout",
+            "query_timeout",
+            "compression",
+            "encryption",
+            "protocol_version",
+        )
 
 
 class ExasolConnectionManager(SQLConnectionManager):
-    TYPE = 'exasol'
+    TYPE = "exasol"
 
     @contextmanager
     def exception_handler(self, sql):
@@ -94,8 +102,8 @@ class ExasolConnectionManager(SQLConnectionManager):
 
     @classmethod
     def open(cls, connection):
-        if connection.state == 'open':
-            logger.debug('Connection is already open, skipping open.')
+        if connection.state == "open":
+            logger.debug("Connection is already open, skipping open.")
             return connection
         credentials = cls.get_credentials(connection.credentials)
 
@@ -109,12 +117,14 @@ class ExasolConnectionManager(SQLConnectionManager):
             elif version == ProtocolVersionType.V2:
                 protocol_version = pyexasol.PROTOCOL_V2
             else:
-                protocol_version = pyexasol.PROTOCOL_V3    
+                protocol_version = pyexasol.PROTOCOL_V3
         except:
-            raise dbt.exceptions.RuntimeException(f"{credentials.protocol_version} is not a valid protocol version.")
+            raise dbt.exceptions.RuntimeException(
+                f"{credentials.protocol_version} is not a valid protocol version."
+            )
 
-        try:
-            C = connect(
+        def _connect():
+            return connect(
                 dsn=credentials.dsn,
                 user=credentials.user,
                 password=credentials.password,
@@ -124,28 +134,25 @@ class ExasolConnectionManager(SQLConnectionManager):
                 query_timeout=credentials.query_timeout,
                 compression=credentials.compression,
                 encryption=credentials.encryption,
-                protocol_version=protocol_version)
-            connection.handle = C
-            connection.state = 'open'
+                protocol_version=protocol_version,
+            )
 
-        except Exception as e:
-            logger.debug("Got an error when attempting to open an exasol "
-                         "connection: '{}'"
-                         .format(e))
+        retryable_exceptions = [pyexasol.ExaError]
 
-            connection.handle = None
-            connection.state = 'fail'
-
-            raise dbt.exceptions.FailedToConnectException(str(e))
-
-        return connection
+        return cls.retry_connection(
+            connection,
+            connect=_connect,
+            logger=logger,
+            retry_limit=credentials.retries,
+            retryable_exceptions=retryable_exceptions,
+        )
 
     def commit(self):
         connection = self.get_thread_connection()
         if dbt.flags.STRICT_MODE:
             assert isinstance(connection, ExaConnection)
 
-        logger.debug('On {}: COMMIT'.format(connection.name))
+        logger.debug("On {}: COMMIT".format(connection.name))
         self.add_commit_query()
 
         connection.transaction_open = False
@@ -161,7 +168,8 @@ class ExasolConnectionManager(SQLConnectionManager):
         if connection.transaction_open is True:
             raise dbt.exceptions.InternalException(
                 'Tried to begin a new transaction on connection "{}", but '
-                'it already had one open!'.format(connection.get('name')))
+                "it already had one open!".format(connection.get("name"))
+            )
 
         connection.transaction_open = True
         return connection
@@ -172,12 +180,12 @@ class ExasolConnectionManager(SQLConnectionManager):
 
     @classmethod
     def get_status(cls, cursor):
-        return 'OK'
+        return "OK"
 
     @classmethod
     def get_response(cls, cursor) -> ExasolAdapterResponse:
         return ExasolAdapterResponse(
-            _message='OK',
+            _message="OK",
             rows_affected=cursor.rowcount,
             execution_time=cursor.execution_time,
         )
@@ -186,30 +194,32 @@ class ExasolConnectionManager(SQLConnectionManager):
     def get_credentials(cls, credentials):
         return credentials
 
-
-    def add_query(self, sql, auto_begin=True, bindings=None,
-                  abridge_sql_log=False):
+    def add_query(self, sql, auto_begin=True, bindings=None, abridge_sql_log=False):
         connection = self.get_thread_connection()
         if auto_begin and connection.transaction_open is False:
             self.begin()
         logger.debug(sql)
         logger.debug('Using {} connection "{}".'.format(self.TYPE, connection.name))
 
-        if sql.startswith('0CSV|'):
-            connection.handle.cursor().import_from_file(bindings, sql.split('|',1)[1])
+        if sql.startswith("0CSV|"):
+            connection.handle.cursor().import_from_file(bindings, sql.split("|", 1)[1])
 
             return connection
 
         with self.exception_handler(sql):
             if abridge_sql_log:
-                logger.debug('On {}: {}....'.format(connection.name, sql[0:512]))
+                logger.debug("On {}: {}....".format(connection.name, sql[0:512]))
             else:
-                logger.debug('On {}: {}'.format(connection.name, sql))
+                logger.debug("On {}: {}".format(connection.name, sql))
             pre = time.time()
 
             cursor = connection.handle.cursor().execute(sql)
 
-            logger.debug("SQL status: {} in {:.2f} seconds".format(self.get_status(cursor), (time.time() - pre)))
+            logger.debug(
+                "SQL status: {} in {:.2f} seconds".format(
+                    self.get_status(cursor), (time.time() - pre)
+                )
+            )
 
             return connection, cursor
 
@@ -223,10 +233,10 @@ class ExasolCursor(object):
 
     def import_from_file(self, agate_table, table):
         self.connection.import_from_file(
-            agate_table.original_abspath, 
-            (table.split('.')[0], table.split('.')[1]),
-            import_params={'skip': 1})
-
+            agate_table.original_abspath,
+            (table.split(".")[0], table.split(".")[1]),
+            import_params={"skip": 1},
+        )
 
     def execute(self, query):
         self.stmt = self.connection.execute(query)
@@ -259,19 +269,21 @@ class ExasolCursor(object):
     @property
     def description(self):
         cols = []
-        if 'resultSet' != self.stmt.result_type:
+        if "resultSet" != self.stmt.result_type:
             return None
 
         for k, v in self.stmt.columns().items():
-            cols.append((
-                k,
-                v.get('type', None),
-                v.get('size', None),
-                v.get('size', None),
-                v.get('precision', None),
-                v.get('scale', None),
-                True
-            ))
+            cols.append(
+                (
+                    k,
+                    v.get("type", None),
+                    v.get("size", None),
+                    v.get("size", None),
+                    v.get("precision", None),
+                    v.get("scale", None),
+                    True,
+                )
+            )
 
         return cols
 
