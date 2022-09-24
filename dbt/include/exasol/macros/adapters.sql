@@ -65,8 +65,11 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
 {% endmacro %}
 
 {% macro exasol__create_view_as(relation, sql) -%}
-  create or replace view {{ relation.schema }}.{{ relation.identifier }} as 
+  CREATE OR REPLACE VIEW {{ relation.schema }}.{{ relation.identifier }} 
+  {{ persist_view_column_docs(relation) }}
+  AS 
     {{ sql }}
+  {{ persist_view_relation_docs() }}
 {% endmacro %}
 
 {% macro exasol__rename_relation(from_relation, to_relation) -%}
@@ -123,4 +126,53 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
     {% endcall %}
 
     {{ return(load_result('get_columns_in_query').table.columns | map(attribute='name') | list) }}
+{% endmacro %}
+
+{% macro exasol__alter_relation_comment(relation, relation_comment) -%}
+  {%- set comment = relation_comment | replace("'", '"') %}
+  COMMENT ON {{ relation.type }} {{ relation }} IS '{{ comment }}';
+{% endmacro %}
+
+{% macro get_column_comment_sql(column_name, column_dict, apply_comment=false) -%}
+  {% if (column_name|upper in column_dict) -%}
+    {% set matched_column = column_name|upper -%}
+  {% elif (column_name|lower in column_dict) -%}
+    {% set matched_column = column_name|lower -%}
+  {% elif (column_name in column_dict) -%}
+    {% set matched_column = column_name -%}
+  {% else -%}
+    {% set matched_column = None -%}
+  {% endif -%}
+  {% if matched_column -%}
+    {% set comment = column_dict[matched_column]['description'] | replace("'", '"') -%}
+  {% else -%}
+    {% set comment = "" -%}
+  {% endif -%}
+  {{ adapter.quote(column_name) }} {{ "COMMENT" if apply_comment }} IS '{{ comment }}'
+{% endmacro %}
+
+{% macro exasol__alter_column_comment(relation, column_dict) -%}
+    {% set existing_columns = adapter.get_columns_in_relation(relation) | map(attribute="name") | list %}
+    COMMENT ON {{ relation.type }} {{ relation }} (
+    {% for column_name in existing_columns %}
+        {{ get_column_comment_sql(column_name, column_dict) }} {{- ',' if not loop.last }}
+    {% endfor %}
+    );
+{% endmacro %}
+
+{% macro persist_view_column_docs(relation) %}
+  {%- if config.persist_column_docs() %}
+  (
+    {%- set existing_columns = adapter.get_columns_in_relation(relation) | map(attribute="name") | list %}
+    {%- for column_name in existing_columns %}
+        {{ get_column_comment_sql(column_name, model.columns, true) }}{{- ',' if not loop.last }}
+    {%- endfor %}
+  )
+  {%- endif %}
+{% endmacro %}
+
+{% macro persist_view_relation_docs() %}
+  {%- if config.persist_relation_docs() %}
+  COMMENT IS '{{ model.description }}'
+  {%- endif %}
 {% endmacro %}
