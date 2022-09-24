@@ -102,7 +102,7 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
   {% call statement('get_columns_in_relation', fetch_result=True) %}
       select
           column_name,
-          column_type,
+          regexp_substr(column_type, '[A-Za-z]+', 1) as column_type,
           column_maxsize,
           column_num_prec,
           column_num_scale
