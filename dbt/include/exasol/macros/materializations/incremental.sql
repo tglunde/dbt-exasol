@@ -32,6 +32,9 @@
   {% set existing_relation = adapter.get_relation(database=database, schema=schema, identifier = identifier) %}
   {% set tmp_relation = make_temp_relation(target_relation) %}
 
+  -- grab current tables grants config for comparision later on
+  {%- set grant_config = config.get('grants') -%}
+
   -- setup
   {{ run_hooks(pre_hooks, inside_transaction=False) }}
 
@@ -62,6 +65,9 @@
   {% endif %}
   
   {{ run_hooks(post_hooks, inside_transaction=True) }}
+
+  {% set should_revoke = should_revoke(existing_relation, full_refresh_mode=full_refresh_mode) %}
+  {% do apply_grants(target_relation, grant_config, should_revoke) %}
 
   -- `COMMIT` happens here
   {{ adapter.commit() }}

@@ -30,6 +30,9 @@
   {%- set exists_as_table = (old_relation is not none and old_relation.is_table) -%}
   {%- set exists_as_view = (old_relation is not none and old_relation.is_view) -%}
 
+  -- grab current tables grants config for comparision later on
+  {%- set grant_config = config.get('grants') -%}
+
   -- drop the temp relations if they exists for some reason
   {{ adapter.drop_relation(intermediate_relation) }}
 
@@ -59,6 +62,9 @@
   {{ adapter.rename_relation(intermediate_relation, target_relation) }}
 
   {{ run_hooks(post_hooks, inside_transaction=True) }}
+
+  {% set should_revoke = should_revoke(existing_relation, full_refresh_mode=full_refresh_mode) %}
+  {% do apply_grants(target_relation, grant_config, should_revoke) %}
 
   -- `COMMIT` happens here
   {{ adapter.commit() }}
