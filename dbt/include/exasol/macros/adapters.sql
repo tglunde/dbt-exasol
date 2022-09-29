@@ -65,11 +65,13 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
 {% endmacro %}
 
 {% macro exasol__create_view_as(relation, sql) -%}
-  CREATE OR REPLACE VIEW {{ relation.schema }}.{{ relation.identifier }} 
-  {{ persist_view_column_docs(relation) }}
-  AS 
-    {{ sql }}
-  {{ persist_view_relation_docs() }}
+CREATE OR REPLACE VIEW {{ relation.schema }}.{{ relation.identifier }} 
+{{- persist_view_column_docs(relation, sql) }}
+AS 
+(
+    {{ sql | indent(4) }}
+)
+{{ persist_view_relation_docs() }}
 {% endmacro %}
 
 {% macro exasol__rename_relation(from_relation, to_relation) -%}
@@ -149,30 +151,30 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
     {% set comment = "" -%}
   {% endif -%}
   {{ adapter.quote(column_name) }} {{ "COMMENT" if apply_comment }} IS '{{ comment }}'
-{% endmacro %}
+{%- endmacro %}
 
 {% macro exasol__alter_column_comment(relation, column_dict) -%}
-    {% set existing_columns = adapter.get_columns_in_relation(relation) | map(attribute="name") | list %}
+    {% set query_columns = get_columns_in_query(sql) %} 
     COMMENT ON {{ relation.type }} {{ relation }} (
-    {% for column_name in existing_columns %}
+    {% for column_name in query_columns %}
         {{ get_column_comment_sql(column_name, column_dict) }} {{- ',' if not loop.last }}
     {% endfor %}
     );
 {% endmacro %}
 
-{% macro persist_view_column_docs(relation) %}
-  {%- if config.persist_column_docs() %}
-  (
-    {%- set existing_columns = adapter.get_columns_in_relation(relation) | map(attribute="name") | list %}
-    {%- for column_name in existing_columns %}
-        {{ get_column_comment_sql(column_name, model.columns, true) }}{{- ',' if not loop.last }}
-    {%- endfor %}
-  )
-  {%- endif %}
-{% endmacro %}
+{% macro persist_view_column_docs(relation, sql) %}
+{%- if config.persist_column_docs() %}
+(
+  {% set query_columns = get_columns_in_query(sql) %}
+  {%- for column_name in query_columns %}
+      {{ get_column_comment_sql(column_name, model.columns, true) -}}{{ ',' if not loop.last -}}
+  {%- endfor %}
+)
+{%- endif %}
+{%- endmacro %}
 
 {% macro persist_view_relation_docs() %}
-  {%- if config.persist_relation_docs() %}
-  COMMENT IS '{{ model.description }}'
-  {%- endif %}
+{%- if config.persist_relation_docs() %}
+COMMENT IS '{{ model.description }}'
+{%- endif %}
 {% endmacro %}
