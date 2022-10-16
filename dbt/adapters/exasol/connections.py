@@ -1,19 +1,28 @@
+# pylint: disable=wrong-import-order
+"""
+DBT adapter connection implementation for Exasol.
+"""
+import decimal
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, List, Optional
 
+import agate
 import dbt.exceptions
 import pyexasol
-from dbt.adapters.base import Credentials
+from dbt.adapters.base import Credentials  # type: ignore
 from dbt.adapters.exasol.relation import ProtocolVersionType
-from dbt.adapters.sql import SQLConnectionManager
+from dbt.adapters.sql import SQLConnectionManager  # type: ignore
 from dbt.contracts.connection import AdapterResponse
-from dbt.logger import GLOBAL_LOGGER as logger
+from dbt.logger import GLOBAL_LOGGER as logger  # type: ignore
 from pyexasol import ExaConnection
 
 
-def connect(**kwargs):
+def connect(**kwargs: bool):
+    """
+    Global connect method initialising DB2Connection
+    """
     if "autocommit" not in kwargs:
         kwargs["autocommit"] = False
 
@@ -21,17 +30,28 @@ def connect(**kwargs):
 
 
 class DB2Connection(ExaConnection):
+    """
+    Override to instantiate ExasolCursor
+    """
+
     def cursor(self):
+        """Instance of ExasolCursor"""
         return ExasolCursor(self)
 
 
 @dataclass
 class ExasolAdapterResponse(AdapterResponse):
+    """
+    Override AdapterResponse
+    """
+
     execution_time: Optional[float] = None
 
 
 @dataclass
 class ExasolCredentials(Credentials):
+    """Profile parameters for Exasol in dbt profiles.yml"""
+
     dsn: str
     user: str
     password: str
@@ -81,6 +101,8 @@ class ExasolCredentials(Credentials):
 
 
 class ExasolConnectionManager(SQLConnectionManager):
+    """Managing Exasol connections"""
+
     TYPE = "exasol"
 
     @contextmanager
@@ -88,17 +110,37 @@ class ExasolConnectionManager(SQLConnectionManager):
         try:
             yield
 
-        except Exception as e:
-            logger.debug("Error running SQL: {}".format(sql))
+        except Exception as yielded_exception:
+            logger.debug(f"Error running SQL: {sql}")
             logger.debug("Rolling back transaction.")
             self.release()
-            if isinstance(e, dbt.exceptions.RuntimeException):
+            if isinstance(yielded_exception, dbt.exceptions.RuntimeException):
                 # during a sql query, an internal to dbt exception was raised.
                 # this sounds a lot like a signal handler and probably has
                 # useful information, so raise it without modification.
                 raise
 
-            raise dbt.exceptions.RuntimeException(e)
+            raise dbt.exceptions.RuntimeException(yielded_exception)
+
+    @classmethod
+    def get_result_from_cursor(cls, cursor: Any) -> agate.Table:
+        data: List[Any] = []
+        column_names: List[str] = []
+
+        if cursor.description is not None:
+            # column_names = [col[0] for col in cursor.description]
+            rows = cursor.fetchall()
+            for idx, col in enumerate(cursor.description):
+                column_names.append(col[0])
+                if len(rows) > 0 and isinstance(rows[0][idx], str):
+                    if col[1] in ["DECIMAL", "BIGINT"]:
+                        for rownum, row in enumerate(rows):
+                            tmp = list(row)
+                            tmp[idx] = decimal.Decimal(row[idx])
+                            rows[rownum] = tmp
+            data = cls.process_results(column_names, rows)
+
+        return dbt.clients.agate_helper.table_from_data_flat(data, column_names)  # type: ignore
 
     @classmethod
     def open(cls, connection):
@@ -149,10 +191,10 @@ class ExasolConnectionManager(SQLConnectionManager):
 
     def commit(self):
         connection = self.get_thread_connection()
-        if dbt.flags.STRICT_MODE:
+        if dbt.flags.STRICT_MODE:  # type: ignore
             assert isinstance(connection, ExaConnection)
 
-        logger.debug("On {}: COMMIT".format(connection.name))
+        logger.debug(f"On {connection.name}: COMMIT")
         self.add_commit_query()
 
         connection.transaction_open = False
@@ -167,19 +209,19 @@ class ExasolConnectionManager(SQLConnectionManager):
 
         if connection.transaction_open is True:
             raise dbt.exceptions.InternalException(
-                'Tried to begin a new transaction on connection "{}", but '
-                "it already had one open!".format(connection.get("name"))
+                f"Tried to begin a new transaction on connection {connection.name}, "
+                "but it already had one open!"
             )
 
         connection.transaction_open = True
         return connection
 
     def cancel(self, connection):
-        connection_name = connection.name
-        connection.abort_query()
+        connection.abort_query()  # type: ignore
 
     @classmethod
     def get_status(cls, cursor):
+        """Override status"""
         return "OK"
 
     @classmethod
@@ -192,6 +234,7 @@ class ExasolConnectionManager(SQLConnectionManager):
 
     @classmethod
     def get_credentials(cls, credentials):
+        """override get_credentials"""
         return credentials
 
     def add_query(self, sql, auto_begin=True, bindings=None, abridge_sql_log=False):
@@ -199,10 +242,10 @@ class ExasolConnectionManager(SQLConnectionManager):
         if auto_begin and connection.transaction_open is False:
             self.begin()
         logger.debug(sql)
-        logger.debug('Using {} connection "{}".'.format(self.TYPE, connection.name))
+        logger.debug(f'Using {self.TYPE} connection "{connection.name}".')
 
         if sql.startswith("0CSV|"):
-            connection.handle.cursor().import_from_file(bindings, sql.split("|", 1)[1])
+            connection.handle.cursor().import_from_file(bindings, sql.split("|", 1)[1])  # type: ignore
 
             return connection
 
@@ -213,7 +256,7 @@ class ExasolConnectionManager(SQLConnectionManager):
                 logger.debug("On {}: {}".format(connection.name, sql))
             pre = time.time()
 
-            cursor = connection.handle.cursor().execute(sql)
+            cursor = connection.handle.cursor().execute(sql)  # type: ignore
 
             logger.debug(
                 "SQL status: {} in {:.2f} seconds".format(
@@ -225,13 +268,16 @@ class ExasolConnectionManager(SQLConnectionManager):
 
 
 class ExasolCursor(object):
-    arraysize = 1
+    """Exasol dbt-adapter cursor implementation"""
+
+    array_size = 1
 
     def __init__(self, connection):
         self.connection = connection
         self.stmt = None
 
     def import_from_file(self, agate_table, table):
+        """importing csv skip=1 parameter for header row"""
         self.connection.import_from_file(
             agate_table.original_abspath,
             (table.split(".")[0], table.split(".")[1]),
@@ -239,10 +285,12 @@ class ExasolCursor(object):
         )
 
     def execute(self, query):
+        """executing query"""
         self.stmt = self.connection.execute(query)
         return self
 
     def executemany(self, query):
+        """execute many not implemented yet"""
         raise RuntimeError
 
     def fetchone(self):
@@ -250,7 +298,7 @@ class ExasolCursor(object):
 
     def fetchmany(self, size=None):
         if size is None:
-            size = self.arraysize
+            size = self.array_size
 
         return self.stmt.fetchmany(size)
 
