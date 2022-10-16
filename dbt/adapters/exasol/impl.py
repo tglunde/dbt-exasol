@@ -1,3 +1,4 @@
+"""dbt-exasol Adapter implementation extending SQLAdapter"""
 from __future__ import absolute_import
 
 from typing import Dict
@@ -9,6 +10,8 @@ from dbt.utils import filter_null_values
 
 
 class ExasolAdapter(SQLAdapter):
+    """Exasol SQLAdapter extension"""
+
     Relation = ExasolRelation
     Column = ExasolColumn
     ConnectionManager = ExasolConnectionManager
@@ -49,3 +52,12 @@ class ExasolAdapter(SQLAdapter):
     def convert_number_type(cls, agate_table: agate.Table, col_idx: int) -> str:
         decimals = agate_table.aggregate(agate.MaxPrecision(col_idx))
         return "float" if decimals else "integer"
+
+    def timestamp_add_sql(
+        self, add_to: str, number: int = 1, interval: str = "hour"
+    ) -> str:
+        """
+        Overriding BaseAdapter default method because Exasol's syntax expects
+        the number in quotes without the interval
+        """
+        return f"{add_to} + interval '{number}' {interval}"
