@@ -43,9 +43,9 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
   {% endcall %}
 {% endmacro %}
 
-{% macro exasol__drop_schema(database_name, schema_name) -%}
+{% macro exasol__drop_schema(relation) -%}
   {% call statement('drop_schema') -%}
-    drop schema if exists {{database_name}}.{{schema_name}} cascade
+    drop schema if exists {{relation}} cascade
   {% endcall %}
 {% endmacro %}
 
