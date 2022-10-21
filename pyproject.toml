@@ -14,7 +14,7 @@ license = "GPL3"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8, <4"
+python = "^3.7.2, <4"
 dbt-core = "1.2.1"
 pyexasol = "^0.25.0"
 dbt-tests-adapter = "^1.2.1"
