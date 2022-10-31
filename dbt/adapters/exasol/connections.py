@@ -21,15 +21,15 @@ from pyexasol import ExaConnection
 
 def connect(**kwargs: bool):
     """
-    Global connect method initialising DB2Connection
+    Global connect method initialising ExasolConnection
     """
     if "autocommit" not in kwargs:
         kwargs["autocommit"] = False
 
-    return DB2Connection(**kwargs)
+    return ExasolConnection(**kwargs)
 
 
-class DB2Connection(ExaConnection):
+class ExasolConnection(ExaConnection):
     """
     Override to instantiate ExasolCursor
     """
