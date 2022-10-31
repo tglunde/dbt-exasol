@@ -5,17 +5,17 @@ from hologram.helpers import StrEnum
 
 
 class RelationType(StrEnum):
-    Table = 'table'
-    View = 'view'
-    CTE = 'cte'
-    MaterializedView = 'materializedview'
-    External = 'external'
+    Table = "table"
+    View = "view"
+    CTE = "cte"
+    MaterializedView = "materializedview"
+    External = "external"
 
 
 class ProtocolVersionType(StrEnum):
-    V1 = 'v1'
-    V2 = 'v2'
-    V3 = 'v3'
+    V1 = "v1"
+    V2 = "v2"
+    V3 = "v3"
 
 
 @dataclass
@@ -24,13 +24,14 @@ class ExasolQuotePolicy(Policy):
     schema: bool = False
     identifier: bool = False
 
-Self = TypeVar('Self', bound='BaseRelation')
+
+Self = TypeVar("Self", bound="BaseRelation")
 
 
 @dataclass(frozen=True, eq=False, repr=False)
 class ExasolRelation(BaseRelation):
     quote_policy: ExasolQuotePolicy = ExasolQuotePolicy()
-    
+
     @classmethod
     def create(
         cls: Type[Self],
@@ -41,15 +42,17 @@ class ExasolRelation(BaseRelation):
         quote_policy: Type[ExasolQuotePolicy] = quote_policy,
         **kwargs,
     ) -> Self:
-        kwargs.update({
-            'path': {
-                'schema': schema,
-                'identifier': identifier,
-            },
-            'type': type,
-        })
+        kwargs.update(
+            {
+                "path": {
+                    "schema": schema,
+                    "identifier": identifier,
+                },
+                "type": type,
+            }
+        )
         return cls.from_dict(kwargs)
 
     @staticmethod
     def add_ephemeral_prefix(name: str):
-        return f'dbt__CTE__{name}'
+        return f"dbt__CTE__{name}"

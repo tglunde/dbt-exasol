@@ -124,3 +124,5 @@ dmypy.json
 .pyre/
 
 .history/
+
+**/logs
