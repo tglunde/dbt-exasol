@@ -3,6 +3,7 @@
 DBT adapter connection implementation for Exasol.
 """
 import decimal
+import os
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -18,6 +19,7 @@ from dbt.contracts.connection import AdapterResponse
 from dbt.logger import GLOBAL_LOGGER as logger  # type: ignore
 from pyexasol import ExaConnection
 
+ROW_SEPARATOR_DEFAULT = "LF" if os.linesep == "\n" else "CRLF"
 
 def connect(**kwargs: bool):
     """
@@ -25,15 +27,15 @@ def connect(**kwargs: bool):
     """
     if "autocommit" not in kwargs:
         kwargs["autocommit"] = False
-
     return ExasolConnection(**kwargs)
 
-
 class ExasolConnection(ExaConnection):
+    
+    row_separator: str = ROW_SEPARATOR_DEFAULT
+
     """
     Override to instantiate ExasolCursor
     """
-
     def cursor(self):
         """Instance of ExasolCursor"""
         return ExasolCursor(self)
@@ -74,6 +76,7 @@ class ExasolCredentials(Credentials):
     # udf_output_port: int
     protocol_version: str = "v3"
     retries: int = 1
+    row_separator: str = ROW_SEPARATOR_DEFAULT 
 
     _ALIASES = {"dbname": "database", "pass": "password"}
 
@@ -97,6 +100,7 @@ class ExasolCredentials(Credentials):
             "compression",
             "encryption",
             "protocol_version",
+            "row_separator",
         )
 
 
@@ -166,7 +170,7 @@ class ExasolConnectionManager(SQLConnectionManager):
             )
 
         def _connect():
-            return connect(
+            conn = connect(
                 dsn=credentials.dsn,
                 user=credentials.user,
                 password=credentials.password,
@@ -178,6 +182,10 @@ class ExasolConnectionManager(SQLConnectionManager):
                 encryption=credentials.encryption,
                 protocol_version=protocol_version,
             )
+            # exasol adapter specific attributes that are unknown to pyexasol
+            # those can be added to ExasolConnection as members
+            conn.row_separator = credentials.row_separator
+            return conn
 
         retryable_exceptions = [pyexasol.ExaError]
 
@@ -281,7 +289,7 @@ class ExasolCursor(object):
         self.connection.import_from_file(
             agate_table.original_abspath,
             (table.split(".")[0], table.split(".")[1]),
-            import_params={"skip": 1},
+            import_params={"skip": 1, "row_separator": self.connection.row_separator},
         )
 
     def execute(self, query):
