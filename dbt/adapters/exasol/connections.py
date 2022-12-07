@@ -29,10 +29,10 @@ def connect(**kwargs: bool):
         kwargs["autocommit"] = False
     return ExasolConnection(**kwargs)
 
-
 class ExasolConnection(ExaConnection):
     
     row_separator: str = ROW_SEPARATOR_DEFAULT
+
     """
     Override to instantiate ExasolCursor
     """
