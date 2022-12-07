@@ -1,9 +1,10 @@
 import os
-
+from dotenv import load_dotenv
 import pytest
 
 pytest_plugins = ["dbt.tests.fixtures.project"]
 
+load_dotenv()
 
 @pytest.fixture(scope="class")
 def dbt_profile_target():
