@@ -47,7 +47,6 @@ class ExasolColumn(Column):
     def string_size(self) -> int:
         if not self.is_string():
             raise RuntimeException("Called string_size() on non-string field!")
-        print(self.dtype)
         if self.char_size is None:
             return 2000000
         else:
