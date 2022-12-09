@@ -13,13 +13,16 @@ import agate
 import dbt.exceptions
 import pyexasol
 from dbt.adapters.base import Credentials  # type: ignore
-from dbt.adapters.exasol.relation import ProtocolVersionType
 from dbt.adapters.sql import SQLConnectionManager  # type: ignore
 from dbt.contracts.connection import AdapterResponse
 from dbt.logger import GLOBAL_LOGGER as logger  # type: ignore
 from pyexasol import ExaConnection
 
+from dbt.adapters.exasol.relation import ProtocolVersionType
+
 ROW_SEPARATOR_DEFAULT = "LF" if os.linesep == "\n" else "CRLF"
+TIMESTAMP_FORMAT_DEFAULT = "YYYY-MM-DDTHH:MI:SS"
+
 
 def connect(**kwargs: bool):
     """
@@ -29,13 +32,16 @@ def connect(**kwargs: bool):
         kwargs["autocommit"] = False
     return ExasolConnection(**kwargs)
 
+
 class ExasolConnection(ExaConnection):
-    
+
     row_separator: str = ROW_SEPARATOR_DEFAULT
+    timestamp_format: str = TIMESTAMP_FORMAT_DEFAULT
 
     """
     Override to instantiate ExasolCursor
     """
+
     def cursor(self):
         """Instance of ExasolCursor"""
         return ExasolCursor(self)
@@ -76,7 +82,8 @@ class ExasolCredentials(Credentials):
     # udf_output_port: int
     protocol_version: str = "v3"
     retries: int = 1
-    row_separator: str = ROW_SEPARATOR_DEFAULT 
+    row_separator: str = ROW_SEPARATOR_DEFAULT
+    timestamp_format: str = TIMESTAMP_FORMAT_DEFAULT
 
     _ALIASES = {"dbname": "database", "pass": "password"}
 
@@ -101,6 +108,7 @@ class ExasolCredentials(Credentials):
             "encryption",
             "protocol_version",
             "row_separator",
+            "timestamp_format",
         )
 
 
@@ -185,6 +193,11 @@ class ExasolConnectionManager(SQLConnectionManager):
             # exasol adapter specific attributes that are unknown to pyexasol
             # those can be added to ExasolConnection as members
             conn.row_separator = credentials.row_separator
+            conn.timestamp_format = credentials.timestamp_format
+            conn.execute(
+                f"alter session set NLS_TIMESTAMP_FORMAT='{conn.timestamp_format}'"
+            )
+
             return conn
 
         retryable_exceptions = [pyexasol.ExaError]

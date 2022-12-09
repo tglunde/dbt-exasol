@@ -1,5 +1,3 @@
-import pytest
-from dbt.tests.adapter.basic.files import generic_test_seed_yml
 from dbt.tests.adapter.basic.test_adapter_methods import BaseAdapterMethod
 from dbt.tests.adapter.basic.test_base import BaseSimpleMaterializations
 from dbt.tests.adapter.basic.test_empty import BaseEmpty
@@ -13,20 +11,9 @@ from dbt.tests.adapter.basic.test_singular_tests_ephemeral import (
 from dbt.tests.adapter.basic.test_snapshot_check_cols import BaseSnapshotCheckCols
 from dbt.tests.adapter.basic.test_snapshot_timestamp import BaseSnapshotTimestamp
 
-from files import (
-    seeds_added_csv,
-    seeds_ansits_csv,
-    seeds_base_csv,
-    seeds_newcolumns_csv,
-)
-
 
 class TestSimpleMaterializationsMyAdapter(BaseSimpleMaterializations):
-    @pytest.fixture(scope="class")
-    def seeds(self):
-        return {
-            "base.csv": seeds_ansits_csv,
-        }
+    pass
 
 
 class TestSingularTestsMyAdapter(BaseSingularTests):
@@ -34,11 +21,7 @@ class TestSingularTestsMyAdapter(BaseSingularTests):
 
 
 class TestSingularTestsEphemeralMyAdapter(BaseSingularTestsEphemeral):
-    @pytest.fixture(scope="class")
-    def seeds(self):
-        return {
-            "base.csv": seeds_base_csv,
-        }
+    pass
 
 
 class TestEmptyMyAdapter(BaseEmpty):
@@ -46,45 +29,23 @@ class TestEmptyMyAdapter(BaseEmpty):
 
 
 class TestEphemeralMyAdapter(BaseEphemeral):
-    @pytest.fixture(scope="class")
-    def seeds(self):
-        return {
-            "base.csv": seeds_base_csv,
-        }
+    pass
 
 
 class TestIncrementalMyAdapter(BaseIncremental):
-    @pytest.fixture(scope="class")
-    def seeds(self):
-        return {"base.csv": seeds_base_csv, "added.csv": seeds_added_csv}
+    pass
 
 
 class TestGenericTestsMyAdapter(BaseGenericTests):
-    @pytest.fixture(scope="class")
-    def seeds(self):
-        return {
-            "base.csv": seeds_base_csv,
-            "schema.yml": generic_test_seed_yml,
-        }
+    pass
 
 
 class TestSnapshotCheckColsMyAdapter(BaseSnapshotCheckCols):
-    @pytest.fixture(scope="class")
-    def seeds(self):
-        return {
-            "base.csv": seeds_base_csv,
-            "added.csv": seeds_added_csv,
-        }
+    pass
 
 
 class TestSnapshotTimestampMyAdapter(BaseSnapshotTimestamp):
-    @pytest.fixture(scope="class")
-    def seeds(self):
-        return {
-            "base.csv": seeds_base_csv,
-            "newcolumns.csv": seeds_newcolumns_csv,
-            "added.csv": seeds_added_csv,
-        }
+    pass
 
 
 class TestBaseAdapterMethod(BaseAdapterMethod):

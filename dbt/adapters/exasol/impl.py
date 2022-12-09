@@ -1,12 +1,14 @@
 """dbt-exasol Adapter implementation extending SQLAdapter"""
 from __future__ import absolute_import
 
-from typing import Dict
+from typing import Dict, Optional
 
 import agate
-from dbt.adapters.exasol import ExasolColumn, ExasolConnectionManager, ExasolRelation
 from dbt.adapters.sql import SQLAdapter
+from dbt.exceptions import raise_compiler_error
 from dbt.utils import filter_null_values
+
+from dbt.adapters.exasol import ExasolColumn, ExasolConnectionManager, ExasolRelation
 
 
 class ExasolAdapter(SQLAdapter):
@@ -61,3 +63,19 @@ class ExasolAdapter(SQLAdapter):
         the number in quotes without the interval
         """
         return f"{add_to} + interval '{number}' {interval}"
+
+    def quote_seed_column(self, column: str, quote_config: Optional[bool]) -> str:  # type: ignore
+        quote_columns: bool = False
+        if isinstance(quote_config, bool):
+            quote_columns = quote_config
+        elif quote_config is None:
+            pass
+        else:
+            raise_compiler_error(
+                f'The seed configuration value of "quote_columns" has an '
+                f"invalid type {type(quote_config)}"
+            )
+
+        if quote_columns:
+            return self.quote(column)
+        return column
