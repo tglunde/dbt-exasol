@@ -1,13 +1,22 @@
+"""pytest conftest to load base dbt project fixtures
+"""
 import os
-from dotenv import load_dotenv
-import pytest
 
-pytest_plugins = ["dbt.tests.fixtures.project"]
+import pytest
+from dotenv import load_dotenv
 
 load_dotenv()
 
+pytest_plugins = ["dbt.tests.fixtures.project"]
+
+
 @pytest.fixture(scope="class")
 def dbt_profile_target():
+    """Fixture overwrite from dbt-core to configure profiles.yml
+
+    Returns:
+        dict: key values for profiles.yml
+    """
     return {
         "type": "exasol",
         "threads": 1,
