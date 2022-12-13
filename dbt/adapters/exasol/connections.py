@@ -7,16 +7,18 @@ import os
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 import agate
 import dbt.exceptions
 import pyexasol
 from dbt.adapters.base import Credentials  # type: ignore
 from dbt.adapters.sql import SQLConnectionManager  # type: ignore
-from dbt.contracts.connection import AdapterResponse
+from dbt.contracts.connection import AdapterResponse, Connection
+from dbt.events.functions import fire_event
+from dbt.events.types import ConnectionUsed, SQLQuery, SQLQueryStatus
 from dbt.logger import GLOBAL_LOGGER as logger  # type: ignore
-from pyexasol import ExaConnection
+from pyexasol import ExaConnection, ExaStatement
 
 from dbt.adapters.exasol.relation import ProtocolVersionType
 
@@ -258,33 +260,38 @@ class ExasolConnectionManager(SQLConnectionManager):
         """override get_credentials"""
         return credentials
 
-    def add_query(self, sql, auto_begin=True, bindings=None, abridge_sql_log=False):
+    def add_query(
+        self,
+        sql,
+        auto_begin=True,
+        bindings: Optional[Any] = None,
+        abridge_sql_log=False,
+    ) -> Tuple[Connection, Any]:
         connection = self.get_thread_connection()
         if auto_begin and connection.transaction_open is False:
             self.begin()
-        logger.debug(sql)
-        logger.debug(f'Using {self.TYPE} connection "{connection.name}".')
-
-        if sql.startswith("0CSV|"):
-            connection.handle.cursor().import_from_file(bindings, sql.split("|", 1)[1])  # type: ignore
-
-            return connection
+        fire_event(ConnectionUsed(conn_type=self.TYPE, conn_name=connection.name))
 
         with self.exception_handler(sql):
             if abridge_sql_log:
-                logger.debug("On {}: {}....".format(connection.name, sql[0:512]))
+                log_sql = "{}...".format(sql[:512])
             else:
-                logger.debug("On {}: {}".format(connection.name, sql))
+                log_sql = sql
+            fire_event(SQLQuery(conn_name=connection.name, sql=log_sql))
+
             pre = time.time()
 
-            cursor = connection.handle.cursor().execute(sql)  # type: ignore
+            if sql.startswith("0CSV|"):
+                cursor = connection.handle.cursor().import_from_file(bindings, sql.split("|", 1)[1])  # type: ignore
+            else:
+                cursor = connection.handle.cursor().execute(sql)  # type: ignore
 
-            logger.debug(
-                "SQL status: {} in {:.2f} seconds".format(
-                    self.get_status(cursor), (time.time() - pre)
+            fire_event(
+                SQLQueryStatus(
+                    status=str(self.get_response(cursor)),
+                    elapsed=round((time.time() - pre)),
                 )
             )
-
             return connection, cursor
 
 
@@ -304,6 +311,7 @@ class ExasolCursor(object):
             (table.split(".")[0], table.split(".")[1]),
             import_params={"skip": 1, "row_separator": self.connection.row_separator},
         )
+        return self
 
     def execute(self, query):
         """executing query"""
@@ -315,15 +323,21 @@ class ExasolCursor(object):
         raise RuntimeError
 
     def fetchone(self):
+        if self.stmt is None:
+            raise RuntimeError("Cannot fetch on unset statement")
         return self.stmt.fetchone()
 
     def fetchmany(self, size=None):
         if size is None:
             size = self.array_size
 
+        if self.stmt is None:
+            raise RuntimeError("Cannot fetch on unset statement")
         return self.stmt.fetchmany(size)
 
     def fetchall(self):
+        if self.stmt is None:
+            raise RuntimeError("Cannot fetch on unset statement")
         return self.stmt.fetchall()
 
     def nextset(self):
@@ -338,6 +352,9 @@ class ExasolCursor(object):
     @property
     def description(self):
         cols = []
+        if self.stmt is None:
+            return cols
+
         if "resultSet" != self.stmt.result_type:
             return None
 
@@ -358,11 +375,16 @@ class ExasolCursor(object):
 
     @property
     def rowcount(self):
-        return self.stmt.rowcount()
+        if self.stmt is not None:
+            return self.stmt.rowcount()
+        return 0
 
     @property
     def execution_time(self):
-        return self.stmt.execution_time
+        if self.stmt is not None:
+            return self.stmt.execution_time
+        return 0
 
     def close(self):
-        self.stmt.close()
+        if self.stmt is not None:
+            self.stmt.close()
