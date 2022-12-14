@@ -3,6 +3,7 @@
 DBT adapter connection implementation for Exasol.
 """
 import decimal
+import os
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -12,11 +13,15 @@ import agate
 import dbt.exceptions
 import pyexasol
 from dbt.adapters.base import Credentials  # type: ignore
-from dbt.adapters.exasol.relation import ProtocolVersionType
 from dbt.adapters.sql import SQLConnectionManager  # type: ignore
 from dbt.contracts.connection import AdapterResponse
 from dbt.logger import GLOBAL_LOGGER as logger  # type: ignore
 from pyexasol import ExaConnection
+
+from dbt.adapters.exasol.relation import ProtocolVersionType
+
+ROW_SEPARATOR_DEFAULT = "LF" if os.linesep == "\n" else "CRLF"
+TIMESTAMP_FORMAT_DEFAULT = "YYYY-MM-DDTHH:MI:SS"
 
 
 def connect(**kwargs: bool):
@@ -25,11 +30,14 @@ def connect(**kwargs: bool):
     """
     if "autocommit" not in kwargs:
         kwargs["autocommit"] = False
-
     return ExasolConnection(**kwargs)
 
 
 class ExasolConnection(ExaConnection):
+
+    row_separator: str = ROW_SEPARATOR_DEFAULT
+    timestamp_format: str = TIMESTAMP_FORMAT_DEFAULT
+
     """
     Override to instantiate ExasolCursor
     """
@@ -74,6 +82,8 @@ class ExasolCredentials(Credentials):
     # udf_output_port: int
     protocol_version: str = "v3"
     retries: int = 1
+    row_separator: str = ROW_SEPARATOR_DEFAULT
+    timestamp_format: str = TIMESTAMP_FORMAT_DEFAULT
 
     _ALIASES = {"dbname": "database", "pass": "password"}
 
@@ -97,6 +107,8 @@ class ExasolCredentials(Credentials):
             "compression",
             "encryption",
             "protocol_version",
+            "row_separator",
+            "timestamp_format",
         )
 
 
@@ -166,7 +178,7 @@ class ExasolConnectionManager(SQLConnectionManager):
             )
 
         def _connect():
-            return connect(
+            conn = connect(
                 dsn=credentials.dsn,
                 user=credentials.user,
                 password=credentials.password,
@@ -178,6 +190,15 @@ class ExasolConnectionManager(SQLConnectionManager):
                 encryption=credentials.encryption,
                 protocol_version=protocol_version,
             )
+            # exasol adapter specific attributes that are unknown to pyexasol
+            # those can be added to ExasolConnection as members
+            conn.row_separator = credentials.row_separator
+            conn.timestamp_format = credentials.timestamp_format
+            conn.execute(
+                f"alter session set NLS_TIMESTAMP_FORMAT='{conn.timestamp_format}'"
+            )
+
+            return conn
 
         retryable_exceptions = [pyexasol.ExaError]
 
@@ -281,7 +302,7 @@ class ExasolCursor(object):
         self.connection.import_from_file(
             agate_table.original_abspath,
             (table.split(".")[0], table.split(".")[1]),
-            import_params={"skip": 1},
+            import_params={"skip": 1, "row_separator": self.connection.row_separator},
         )
 
     def execute(self, query):
