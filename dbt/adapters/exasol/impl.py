@@ -28,7 +28,7 @@ class ExasolAdapter(SQLAdapter):
 
     @classmethod
     def convert_text_type(cls, agate_table, col_idx):
-        return "varchar({})".format(2000000)
+        return f"varchar({2000000})"
 
     def _make_match_kwargs(
         self, database: str, schema: str, identifier: str

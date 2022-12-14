@@ -1,3 +1,6 @@
+"""
+dbt exasol adapter column module
+"""
 import re
 from dataclasses import dataclass
 from typing import ClassVar, Dict
@@ -7,7 +10,10 @@ from dbt.exceptions import RuntimeException
 
 
 @dataclass
+# pylint: disable=missing-function-docstring
 class ExasolColumn(Column):
+    """Column implementation for exasol"""
+
     # https://docs.exasol.com/db/latest/sql_references/data_types/datatypealiases.htm
     TYPE_LABELS: ClassVar[Dict[str, str]] = {
         "STRING": "VARCHAR(2000000) UTF8",
@@ -23,7 +29,7 @@ class ExasolColumn(Column):
 
     def is_integer(self) -> bool:
         # everything that smells like an int is actually a DECIMAL(18, 0)
-        return True if self.is_numeric() and self.numeric_scale == 0 else False
+        return self.is_numeric() and self.numeric_scale == 0
 
     def is_float(self):
         return self.dtype.lower() == "double"
@@ -49,14 +55,14 @@ class ExasolColumn(Column):
             raise RuntimeException("Called string_size() on non-string field!")
         if self.char_size is None:
             return 2000000
-        else:
-            return int(self.char_size)
+        return int(self.char_size)
 
     @classmethod
     def string_type(cls, size: int) -> str:
         return f"VARCHAR({size})"
 
     @classmethod
+    # pylint: disable=raise-missing-from
     def from_description(cls, name: str, raw_data_type: str) -> "Column":
         match = re.match(r"([^(]+)(\([^)]+\))?", raw_data_type)
         if match is None:
