@@ -1,13 +1,24 @@
 {% macro incremental_delete(target_relation, tmp_relation) -%}
   {%- set unique_key = config.get('unique_key') -%}
 
-  {% if unique_key is not none %}
-    delete
-    from {{ target_relation }}
-    where ({{ unique_key }}) in (
-      select ({{ unique_key }})
-      from {{ tmp_relation.schema }}.{{tmp_relation.identifier}}
-  );
+  {% if unique_key %}
+    {% if unique_key is sequence and unique_key is not string %}
+        delete from {{ target_relation }}
+        where exists (select 1 from {{ tmp_relation }}
+            where
+            {% for key in unique_key %}
+                {{ tmp_relation }}.{{ key }} = {{ target_relation }}.{{ key }}
+                {{ "and " if not loop.last }}
+            {% endfor %}
+        );
+    {% else %}
+        delete from {{ target_relation }}
+        where (
+            {{ unique_key }}) in (
+            select ({{ unique_key }})
+            from {{ tmp_relation }}
+        );
+    {% endif %}
   {%endif%}
 {%- endmacro %}
 
@@ -60,7 +71,7 @@
     {{ build_sql }}
   {%- endcall -%}
 
-{% if tmp_relation is not none %}
+  {% if tmp_relation is not none %}
     {% do adapter.drop_relation(tmp_relation) %}
   {% endif %}
   

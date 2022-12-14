@@ -10,43 +10,52 @@ from dbt.tests.adapter.basic.test_singular_tests_ephemeral import (
 )
 from dbt.tests.adapter.basic.test_snapshot_check_cols import BaseSnapshotCheckCols
 from dbt.tests.adapter.basic.test_snapshot_timestamp import BaseSnapshotTimestamp
+from dbt.tests.adapter.basic.test_validate_connection import BaseValidateConnection
 
 
-class TestSimpleMaterializationsMyAdapter(BaseSimpleMaterializations):
+class TestSimpleMaterializationsExasol(BaseSimpleMaterializations):
     pass
 
 
-class TestSingularTestsMyAdapter(BaseSingularTests):
+class TestSingularTestsExasol(BaseSingularTests):
     pass
 
 
-class TestSingularTestsEphemeralMyAdapter(BaseSingularTestsEphemeral):
+class TestSingularTestsEphemeralExasol(BaseSingularTestsEphemeral):
     pass
 
 
-class TestEmptyMyAdapter(BaseEmpty):
+class TestEmptyExasol(BaseEmpty):
     pass
 
 
-class TestEphemeralMyAdapter(BaseEphemeral):
+class TestEphemeralExasol(BaseEphemeral):
     pass
 
 
-class TestIncrementalMyAdapter(BaseIncremental):
+class TestIncrementalExasol(BaseIncremental):
     pass
 
 
-class TestGenericTestsMyAdapter(BaseGenericTests):
+class TestGenericTestsExasol(BaseGenericTests):
     pass
 
 
-class TestSnapshotCheckColsMyAdapter(BaseSnapshotCheckCols):
+class TestSnapshotCheckColsExasol(BaseSnapshotCheckCols):
     pass
 
 
-class TestSnapshotTimestampMyAdapter(BaseSnapshotTimestamp):
+class TestSnapshotTimestampExasol(BaseSnapshotTimestamp):
     pass
 
 
 class TestBaseAdapterMethod(BaseAdapterMethod):
+    pass
+
+
+class TestBaseCachingExasol(BaseAdapterMethod):
+    pass
+
+
+class TestValidateConnectionExasol(BaseValidateConnection):
     pass
