@@ -1,25 +1,15 @@
+"""dbt-exasol adapter relation module"""
 from dataclasses import dataclass
+from typing import Optional, Type, TypeVar
+
 from dbt.adapters.base.relation import BaseRelation, Policy
-from typing import Type, TypeVar, Optional
-from hologram.helpers import StrEnum
-
-
-class RelationType(StrEnum):
-    Table = "table"
-    View = "view"
-    CTE = "cte"
-    MaterializedView = "materializedview"
-    External = "external"
-
-
-class ProtocolVersionType(StrEnum):
-    V1 = "v1"
-    V2 = "v2"
-    V3 = "v3"
+from dbt.contracts.relation import RelationType
 
 
 @dataclass
 class ExasolQuotePolicy(Policy):
+    """quote policy - not quotes"""
+
     database: bool = False
     schema: bool = False
     identifier: bool = False
@@ -30,9 +20,14 @@ Self = TypeVar("Self", bound="BaseRelation")
 
 @dataclass(frozen=True, eq=False, repr=False)
 class ExasolRelation(BaseRelation):
+    """Relation implementation for exasol"""
+
     quote_policy: ExasolQuotePolicy = ExasolQuotePolicy()
 
     @classmethod
+    # pylint: disable=too-many-arguments
+    # pylint: disable=redefined-builtin
+    # pylint: disable=unused-argument
     def create(
         cls: Type[Self],
         database: Optional[str] = None,
@@ -42,6 +37,17 @@ class ExasolRelation(BaseRelation):
         quote_policy: Type[ExasolQuotePolicy] = quote_policy,
         **kwargs,
     ) -> Self:
+        """updating kwargs to set schema and identifier
+        Args:
+            cls (Type[Self]): _description_
+            database (Optional[str], optional): _description_. Defaults to None.
+            schema (Optional[str], optional): _description_. Defaults to None.
+            identifier (Optional[str], optional): _description_. Defaults to None.
+            type (Optional[RelationType], optional): _description_. Defaults to None.
+
+        Returns:
+            Self: _description_
+        """
         kwargs.update(
             {
                 "path": {
