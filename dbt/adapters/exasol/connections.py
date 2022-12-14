@@ -20,7 +20,7 @@ from hologram.helpers import StrEnum
 from pyexasol import ExaConnection
 
 ROW_SEPARATOR_DEFAULT = "LF" if os.linesep == "\n" else "CRLF"
-TIMESTAMP_FORMAT_DEFAULT = "YYYY-MM-DDTHH:MI:SS"
+TIMESTAMP_FORMAT_DEFAULT = "YYYY-MM-DDTHH:MI:SS.FF6"
 
 LOGGER = AdapterLogger("exasol")
 

@@ -1,4 +1,4 @@
-import pytest
+import pytest, os
 
 #from dbt.tests.adapter.utils.test_array_append import BaseArrayAppend
 #from dbt.tests.adapter.utils.test_array_concat import BaseArrayConcat
@@ -29,13 +29,6 @@ from dbt.tests.adapter.utils.base_utils import BaseUtils
 from utils_fixtures import *
 
 class TestAnyValue(BaseAnyValue):
-    @pytest.fixture(scope="class")
-    def seeds(self):
-        return {
-            "data_any_value.csv": exasol__seeds__data_any_value_csv,
-            "data_any_value_expected.csv": exasol__seeds__data_any_value_expected_csv,
-        }
-
     @pytest.fixture(scope="class")
     def models(self):
         return {
@@ -140,6 +133,17 @@ class TestDateAdd(BaseDateAdd):
 
 class TestDateDiff(BaseDateDiff):
     @pytest.fixture(scope="class")
+    def dbt_profile_target(self):
+        return {
+           "type": "exasol",
+           "threads": 1,
+           "dsn": os.getenv('DBT_DSN',"localhost:8563"),
+           "user": os.getenv('DBT_USER',"sys"),
+           "pass": os.getenv('DBT_PASS',"exasol"),
+           "dbname": "DB",
+           "timestamp_format": "YYYY-MM-DD HH:MI:SS.FF6"
+        }
+    @pytest.fixture(scope="class")
     def seeds(self):
         return {"data_datediff.csv": exasol__seeds__data_datediff_csv}
 
@@ -151,7 +155,6 @@ class TestDateDiff(BaseDateDiff):
                 exasol__models__test_datediff_sql, "datediff"
             ),
         }
-
 
 class TestDateTrunc(BaseDateTrunc):
     @pytest.fixture(scope="class")

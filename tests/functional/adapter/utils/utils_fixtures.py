@@ -1,22 +1,5 @@
 # any_value
 
-exasol__seeds__data_any_value_csv = """ID,KEY_NAME,STATIC_COL
-1,abc,dbt
-2,abc,dbt
-3,jkl,dbt
-4,jkl,dbt
-5,jkl,dbt
-6,xyz,test
-"""
-
-
-exasol__seeds__data_any_value_expected_csv = """KEY_NAME,STATIC_COL,NUM_ROWS
-abc,dbt,2
-jkl,dbt,3
-xyz,test,1
-"""
-
-
 exasol__models__test_any_value_sql = """
 with testdata as (
 
@@ -60,7 +43,7 @@ models:
 """
 # bool_or
 
-exasol__seeds__data_bool_or_csv = """KEY_COLUMN,VAL1,VAL2
+exasol__seeds__data_bool_or_csv = """key_column,val1,val2
 abc,1,1
 abc,1,0
 def,1,0
@@ -71,7 +54,7 @@ klm,1,
 """
 
 
-exasol__seeds__data_bool_or_expected_csv = """KEY_COLUMN,VALUE
+exasol__seeds__data_bool_or_expected_csv = """key_column,val
 abc,true
 def,false
 hij,true
@@ -104,7 +87,7 @@ calculate as (
 
 select
     calculate.val as actual,
-    data_output.value as expected
+    data_output.val as expected
 from calculate
 left join data_output
 on calculate.key_column = data_output.key_column
@@ -151,7 +134,7 @@ models:
 
 # concat
 
-exasol__seeds__data_concat_csv = """INPUT_1,INPUT_2,OUTPUT_VAL
+exasol__seeds__data_concat_csv = """input_1,input_2,output_val
 a,b,ab
 a,,a
 ,b,b
@@ -186,11 +169,11 @@ models:
 
 # dateadd
 
-exasol__seeds__data_dateadd_csv = """FROM_TIME,INTERVAL_LENGTH,DATEPART,RES
-2018-01-01 01:00:00,1,day,2018-01-02 01:00:00
-2018-01-01 01:00:00,1,month,2018-02-01 01:00:00
-2018-01-01 01:00:00,1,year,2019-01-01 01:00:00
-2018-01-01 01:00:00,1,hour,2018-01-01 02:00:00
+exasol__seeds__data_dateadd_csv = """from_time,interval_length,datepart,res
+2018-01-01T01:00:00,1,day,2018-01-02T01:00:00
+2018-01-01T01:00:00,1,month,2018-02-01T01:00:00
+2018-01-01T01:00:00,1,year,2019-01-01T01:00:00
+2018-01-01T01:00:00,1,hour,2018-01-01T02:00:00
 ,1,day,
 """
 
@@ -227,7 +210,7 @@ models:
 
 # datediff
 
-exasol__seeds__data_datediff_csv = """FIRST_DATE,SECOND_DATE,DATEPART,RES
+exasol__seeds__data_datediff_csv = """first_date,second_date,datepart,res
 2018-01-01 01:00:00,2018-01-02 01:00:00,day,1
 2018-01-01 01:00:00,2018-02-01 01:00:00,month,1
 2018-01-01 01:00:00,2019-01-01 01:00:00,year,1
@@ -284,8 +267,8 @@ models:
 
 # date_trunc
 
-exasol__seeds__data_date_trunc_csv = """UPDATED_AT,DAY_VAL,MONTH_VAL
-2018-01-05 12:00:00,2018-01-05,2018-01-01
+exasol__seeds__data_date_trunc_csv = """updated_at,day_val,month_val
+2018-01-05T12:00:00,2018-01-05,2018-01-01
 ,,
 """
 
@@ -351,7 +334,7 @@ models:
 
 # hash
 
-exasol__seeds__data_hash_csv = """INPUT_1,OUTPUT_VAL
+exasol__seeds__data_hash_csv = """input_1,output_val
 ab,187ef4436122d1cc2f40dc2b92f0eba0
 a,0cc175b9c0f1b6a831c399e269772661
 1,c4ca4238a0b923820dcc509a6f75849b
@@ -386,7 +369,7 @@ models:
 
 # last_day
 
-exasol__seeds__data_last_day_csv = """DATE_DAY,DATE_PART,RES
+exasol__seeds__data_last_day_csv = """date_day,date_part,res
 2018-01-02,month,2018-01-31
 2018-01-02,quarter,2018-03-31
 2018-01-02,year,2018-12-31
@@ -426,7 +409,7 @@ models:
 
 # length
 
-exasol__seeds__data_length_csv = """EXPRESSION,OUTPUT_VAL
+exasol__seeds__data_length_csv = """expression,output_val
 abcdef,6
 fishtown,8
 december,8
@@ -462,7 +445,7 @@ models:
 
 # listagg
 
-exasol__seeds__data_listagg_csv = """GROUP_COL,STRING_TEXT,ORDER_COL
+exasol__seeds__data_listagg_csv = """group_col,string_text,order_col
 1,a,1
 1,b,2
 1,c,3
@@ -475,7 +458,7 @@ exasol__seeds__data_listagg_csv = """GROUP_COL,STRING_TEXT,ORDER_COL
 """
 
 
-exasol__seeds__data_listagg_output_csv = """GROUP_COL,EXPECTED,VERSION
+exasol__seeds__data_listagg_output_csv = """group_col,expected,version
 1,"a_|_b_|_c",bottom_ordered
 2,"1_|_a_|_p",bottom_ordered
 3,"g_|_g_|_g",bottom_ordered
@@ -573,7 +556,7 @@ models:
 
 # position
 
-exasol__seeds__data_position_csv = """SUBSTRING_TEXT,STRING_TEXT,RES
+exasol__seeds__data_position_csv = """substring_text,string_text,res
 def,abcdef,4
 land,earth,0
 town,fishtown,5
@@ -609,7 +592,7 @@ models:
 
 # replace
 
-exasol__seeds__data_replace_csv = """STRING_TEXT,SEARCH_CHARS,REPLACE_CHARS,RES
+exasol__seeds__data_replace_csv = """string_text,search_chars,replace_chars,res
 a,a,b,b
 http://google.com,http://,"",google.com
 """
@@ -649,7 +632,7 @@ models:
 
 # right
 
-exasol__seeds__data_right_csv = """STRING_TEXT,LENGTH_EXPRESSION,OUTPUT_VAL
+exasol__seeds__data_right_csv = """string_text,length_expression,output_val
 abcdef,3,def
 fishtown,4,town
 december,5,ember
@@ -685,7 +668,7 @@ models:
 
 # safe_cast
 
-exasol__seeds__data_safe_cast_csv = """FIELD,OUTPUT_VAL
+exasol__seeds__data_safe_cast_csv = """field,output_val
 abc,abc
 123,123
 ,
@@ -719,7 +702,7 @@ models:
 
 # split_part
 
-exasol__seeds__data_split_part_csv = """PARTS,SPLIT_ON,RESULT_1,RESULT_2,RESULT_3
+exasol__seeds__data_split_part_csv = """parts,split_on,result_1,result_2,result_3
 a|b|c,|,a,b,c
 1|2|3,|,1,2,3
 ,|,,,
