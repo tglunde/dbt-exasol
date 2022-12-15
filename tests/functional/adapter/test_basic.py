@@ -1,3 +1,5 @@
+import pytest, os
+
 from dbt.tests.adapter.basic.test_adapter_methods import BaseAdapterMethod
 from dbt.tests.adapter.basic.test_base import BaseSimpleMaterializations
 from dbt.tests.adapter.basic.test_empty import BaseEmpty
@@ -11,6 +13,7 @@ from dbt.tests.adapter.basic.test_singular_tests_ephemeral import (
 from dbt.tests.adapter.basic.test_snapshot_check_cols import BaseSnapshotCheckCols
 from dbt.tests.adapter.basic.test_snapshot_timestamp import BaseSnapshotTimestamp
 from dbt.tests.adapter.basic.test_validate_connection import BaseValidateConnection
+from test_docs_generate import (BaseDocsGenerate, BaseDocsGenReferences)
 
 
 class TestSimpleMaterializationsExasol(BaseSimpleMaterializations):
@@ -59,3 +62,30 @@ class TestBaseCachingExasol(BaseAdapterMethod):
 
 class TestValidateConnectionExasol(BaseValidateConnection):
     pass
+
+class TestDocsGenerateExasol(BaseDocsGenerate):
+    @pytest.fixture(scope="class")
+    def dbt_profile_target(self):
+        return {
+           "type": "exasol",
+           "threads": 1,
+           "dsn": os.getenv('DBT_DSN',"localhost:8563"),
+           "user": os.getenv('DBT_USER',"sys"),
+           "pass": os.getenv('DBT_PASS',"exasol"),
+           "dbname": "DB",
+           "timestamp_format": "YYYY-MM-DD HH:MI:SS.FF6"
+        }
+
+class TestDocsGenReferencesExasol(BaseDocsGenReferences):
+    
+    @pytest.fixture(scope="class")
+    def dbt_profile_target(self):
+        return {
+           "type": "exasol",
+           "threads": 1,
+           "dsn": os.getenv('DBT_DSN',"localhost:8563"),
+           "user": os.getenv('DBT_USER',"sys"),
+           "pass": os.getenv('DBT_PASS',"exasol"),
+           "dbname": "DB",
+           "timestamp_format": "YYYY-MM-DD HH:MI:SS.FF6"
+        }
