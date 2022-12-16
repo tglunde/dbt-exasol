@@ -20,8 +20,8 @@ def dbt_profile_target():
     return {
         "type": "exasol",
         "threads": 1,
-        "dsn": os.getenv("DBT_DSN"),
-        "user": os.getenv("DBT_USER"),
-        "pass": os.getenv("DBT_PASS"),
+        "dsn": os.getenv("DBT_DSN", "localhost:8563"),
+        "user": os.getenv("DBT_USER", "sys"),
+        "pass": os.getenv("DBT_PASS", "exasol"),
         "dbname": "DB",
     }

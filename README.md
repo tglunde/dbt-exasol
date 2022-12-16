@@ -13,6 +13,14 @@
 Please see the dbt documentation on **[Exasol setup](https://docs.getdbt.com/reference/warehouse-setups/exasol-setup)** for more information on how to start using the Exasol adapter.
 
 # Known isues
+## SQL functions compatibility
+
+### split_part
+There is no equivalent SQL function in Exasol for split_part.
+
+### listagg part_num
+The SQL function listagg in Exasol does not support the num_part parameter.
+
 ## Timestamp compatibility
 Currently we did not see any possible way to make Exasol accept the timestamp format ```1981-05-20T06:46:51``` with a 'T' as separator between date and time part. To pass the adapter tests we had to change the timestamps in the seed files to have a <space> character instead of the 'T' (```1981-05-20 06:46:51```).
 ## Default case of identifiers
