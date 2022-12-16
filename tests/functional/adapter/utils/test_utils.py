@@ -1,18 +1,25 @@
-import pytest, os
+import os
 
-#from dbt.tests.adapter.utils.test_array_append import BaseArrayAppend
-#from dbt.tests.adapter.utils.test_array_concat import BaseArrayConcat
-#from dbt.tests.adapter.utils.test_array_construct import BaseArrayConstruct
+import pytest
+from dbt.exceptions import CompilationException
+from dbt.tests.adapter.utils.base_utils import BaseUtils
+
+# from dbt.tests.adapter.utils.test_array_append import BaseArrayAppend
+# from dbt.tests.adapter.utils.test_array_concat import BaseArrayConcat
+# from dbt.tests.adapter.utils.test_array_construct import BaseArrayConstruct
 from dbt.tests.adapter.utils.test_any_value import BaseAnyValue
 from dbt.tests.adapter.utils.test_bool_or import BaseBoolOr
 from dbt.tests.adapter.utils.test_cast_bool_to_text import BaseCastBoolToText
 from dbt.tests.adapter.utils.test_concat import BaseConcat
-#from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampAware
+from dbt.tests.adapter.utils.test_date_trunc import BaseDateTrunc
+
+# from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampAware
 from dbt.tests.adapter.utils.test_dateadd import BaseDateAdd
 from dbt.tests.adapter.utils.test_datediff import BaseDateDiff
-from dbt.tests.adapter.utils.test_date_trunc import BaseDateTrunc
-from dbt.tests.adapter.utils.test_escape_single_quotes import BaseEscapeSingleQuotesQuote
-from dbt.tests.adapter.utils.test_escape_single_quotes import BaseEscapeSingleQuotesBackslash
+from dbt.tests.adapter.utils.test_escape_single_quotes import (
+    BaseEscapeSingleQuotesBackslash,
+    BaseEscapeSingleQuotesQuote,
+)
 from dbt.tests.adapter.utils.test_except import BaseExcept
 from dbt.tests.adapter.utils.test_hash import BaseHash
 from dbt.tests.adapter.utils.test_intersect import BaseIntersect
@@ -25,8 +32,9 @@ from dbt.tests.adapter.utils.test_right import BaseRight
 from dbt.tests.adapter.utils.test_safe_cast import BaseSafeCast
 from dbt.tests.adapter.utils.test_split_part import BaseSplitPart
 from dbt.tests.adapter.utils.test_string_literal import BaseStringLiteral
-from dbt.tests.adapter.utils.base_utils import BaseUtils
+from dbt.tests.util import run_dbt
 from utils_fixtures import *
+
 
 class TestAnyValue(BaseAnyValue):
     @pytest.fixture(scope="class")
@@ -39,15 +47,15 @@ class TestAnyValue(BaseAnyValue):
         }
 
 
-#class TestArrayAppend(BaseArrayAppend):
+# class TestArrayAppend(BaseArrayAppend):
 #    pass
 
 
-#class TestArrayConcat(BaseArrayConcat):
+# class TestArrayConcat(BaseArrayConcat):
 #    pass
 
 
-#class TestArrayConstruct(BaseArrayConstruct):
+# class TestArrayConstruct(BaseArrayConstruct):
 #    pass
 
 
@@ -89,12 +97,14 @@ class TestConcat(BaseConcat):
     def models(self):
         return {
             "test_concat.yml": exasol__models__test_concat_yml,
-            "test_concat.sql": self.interpolate_macro_namespace(exasol__models__test_concat_sql, "concat"),
+            "test_concat.sql": self.interpolate_macro_namespace(
+                exasol__models__test_concat_sql, "concat"
+            ),
         }
 
 
 # Use either BaseCurrentTimestampAware or BaseCurrentTimestampNaive but not both
-#class TestCurrentTimestamp(BaseCurrentTimestampAware):
+# class TestCurrentTimestamp(BaseCurrentTimestampAware):
 #    pass
 
 
@@ -135,14 +145,15 @@ class TestDateDiff(BaseDateDiff):
     @pytest.fixture(scope="class")
     def dbt_profile_target(self):
         return {
-           "type": "exasol",
-           "threads": 1,
-           "dsn": os.getenv('DBT_DSN',"localhost:8563"),
-           "user": os.getenv('DBT_USER',"sys"),
-           "pass": os.getenv('DBT_PASS',"exasol"),
-           "dbname": "DB",
-           "timestamp_format": "YYYY-MM-DD HH:MI:SS.FF6"
+            "type": "exasol",
+            "threads": 1,
+            "dsn": os.getenv("DBT_DSN", "localhost:8563"),
+            "user": os.getenv("DBT_USER", "sys"),
+            "pass": os.getenv("DBT_PASS", "exasol"),
+            "dbname": "DB",
+            "timestamp_format": "YYYY-MM-DD HH:MI:SS.FF6",
         }
+
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"data_datediff.csv": exasol__seeds__data_datediff_csv}
@@ -155,6 +166,7 @@ class TestDateDiff(BaseDateDiff):
                 exasol__models__test_datediff_sql, "datediff"
             ),
         }
+
 
 class TestDateTrunc(BaseDateTrunc):
     @pytest.fixture(scope="class")
@@ -177,7 +189,8 @@ class TestEscapeSingleQuotes(BaseEscapeSingleQuotesBackslash):
         return {
             "test_escape_single_quotes.yml": exasol__models__test_escape_single_quotes_yml,
             "test_escape_single_quotes.sql": self.interpolate_macro_namespace(
-                exasol__models__test_escape_single_quotes_quote_sql, "escape_single_quotes"
+                exasol__models__test_escape_single_quotes_quote_sql,
+                "escape_single_quotes",
             ),
         }
 
@@ -188,7 +201,8 @@ class BaseEscapeSingleQuotesBackslash(BaseUtils):
         return {
             "test_escape_single_quotes.yml": exasol__models__test_escape_single_quotes_yml,
             "test_escape_single_quotes.sql": self.interpolate_macro_namespace(
-                exasol__models__test_escape_single_quotes_backslash_sql, "escape_single_quotes"
+                exasol__models__test_escape_single_quotes_backslash_sql,
+                "escape_single_quotes",
             ),
         }
 
@@ -206,7 +220,9 @@ class TestHash(BaseHash):
     def models(self):
         return {
             "test_hash.yml": exasol__models__test_hash_yml,
-            "test_hash.sql": self.interpolate_macro_namespace(exasol__models__test_hash_sql, "hash"),
+            "test_hash.sql": self.interpolate_macro_namespace(
+                exasol__models__test_hash_sql, "hash"
+            ),
         }
 
 
@@ -238,7 +254,9 @@ class TestLength(BaseLength):
     def models(self):
         return {
             "test_length.yml": exasol__models__test_length_yml,
-            "test_length.sql": self.interpolate_macro_namespace(exasol__models__test_length_sql, "length"),
+            "test_length.sql": self.interpolate_macro_namespace(
+                exasol__models__test_length_sql, "length"
+            ),
         }
 
 
@@ -258,6 +276,11 @@ class TestListagg(BaseListagg):
                 exasol__models__test_listagg_sql, "listagg"
             ),
         }
+
+    def test_build_assert_equal(self, project):
+        with pytest.raises(CompilationException) as exc_info:
+            run_dbt(["build"], expect_pass=False)
+        assert exc_info.value.msg == "`limit_num` parameter is not supported on Exasol!"
 
 
 class TestPosition(BasePosition):
@@ -299,9 +322,10 @@ class TestRight(BaseRight):
     def models(self):
         return {
             "test_right.yml": exasol__models__test_right_yml,
-            "test_right.sql": self.interpolate_macro_namespace(exasol__models__test_right_sql, "right"),
+            "test_right.sql": self.interpolate_macro_namespace(
+                exasol__models__test_right_sql, "right"
+            ),
         }
-
 
 
 class TestSafeCast(BaseSafeCast):
@@ -314,7 +338,9 @@ class TestSafeCast(BaseSafeCast):
         return {
             "test_safe_cast.yml": exasol__models__test_safe_cast_yml,
             "test_safe_cast.sql": self.interpolate_macro_namespace(
-                self.interpolate_macro_namespace(exasol__models__test_safe_cast_sql, "safe_cast"),
+                self.interpolate_macro_namespace(
+                    exasol__models__test_safe_cast_sql, "safe_cast"
+                ),
                 "type_string",
             ),
         }
@@ -334,6 +360,10 @@ class TestSplitPart(BaseSplitPart):
             ),
         }
 
+    def test_build_assert_equal(self, project):
+        with pytest.raises(CompilationException) as exc_info:
+            run_dbt(["build"], expect_pass=False)
+        assert exc_info.value.msg == "Unsupported on Exasol! Sorry..."
 
 
 class TestStringLiteral(BaseStringLiteral):
