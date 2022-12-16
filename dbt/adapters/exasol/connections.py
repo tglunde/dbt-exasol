@@ -258,6 +258,10 @@ class ExasolCursor:
         """executing query"""
         if query.startswith("0CSV|"):
             self.import_from_file(bindings, query.split("|", 1)[1])  # type: ignore
+        elif query.__contains__("|SEPARATEMEPLEASE|"):
+            sqls = query.split("|SEPARATEMEPLEASE|")
+            for sql in sqls:
+                self.stmt = self.connection.execute(sql)
         else:
             self.stmt = self.connection.execute(query)
         return self
