@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dbt-exasol"
-version = "1.2.2"
+version = "1.3.0"
 description = "Adapter to dbt-core for warehouse Exasol"
 authors = ["Torsten Glunde <torsten.glunde@alligator-company.com>", "Ilija Kutle <ilija.kutle@alligator-company.com>"]
 homepage = "https://alligatorcompany.gitlab.io/dbt-exasol"
@@ -15,9 +15,8 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.7.2, <4"
-dbt-core = "^1.2, <1.3"
+dbt-core = "^1.3, <1.4"
 pyexasol = "^0.25.0"
-dbt-tests-adapter = "^1.2, <1.3"
 
 [tool.poetry.dev-dependencies]
 black = "^22.8.0"
@@ -26,7 +25,7 @@ pytest-dotenv = "^0.5.2"
 tox = "^3.26.0"
 
 [tool.poetry.group.dev.dependencies]
-dbt-tests-adapter = "^1.2.1"
+dbt-tests-adapter = "^1.3, <1.4"
 pylint = "^2.15.8"
 
 [build-system]
