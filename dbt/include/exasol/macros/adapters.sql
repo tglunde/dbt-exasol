@@ -1,5 +1,4 @@
-
-/* 
+/*
 LIST_RELATIONS_MACRO_NAME = 'list_relations_without_caching'
 GET_COLUMNS_IN_RELATION_MACRO_NAME = 'get_columns_in_relation'
 LIST_SCHEMAS_MACRO_NAME = 'list_schemas'
@@ -45,7 +44,7 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
 
 {% macro exasol__drop_schema(relation) -%}
   {% call statement('drop_schema') -%}
-    drop schema if exists {{relation}} cascade
+    drop schema if exists {{ relation }} cascade
   {% endcall %}
 {% endmacro %}
 
@@ -80,9 +79,15 @@ AS
   {%- endcall %}
 {% endmacro %}
 
-{% macro exasol__create_table_as(temporary, relation, sql) -%}
-    CREATE OR REPLACE TABLE {{ relation.schema }}.{{ relation.identifier }} AS 
-    {{ sql }}
+{% macro exasol__create_table_as(temporary, relation, sql, language='sql') -%}
+    {%- if language == 'sql' -%}
+        CREATE OR REPLACE TABLE {{ relation.schema }}.{{ relation.identifier }} AS 
+        {{ sql }}
+    {%- elif language == 'python' -%}
+      {{ py_write_table(compiled_code=compiled_code, target_relation=relation, temporary=temporary) }}
+    {%- else -%}
+      {% do exceptions.raise_compiler_error("exasol__create_table_as macro didn't get supported language, it got %s" % language) %}
+    {%- endif -%}
 {% endmacro %}
 
 {% macro exasol__current_timestamp() -%}
