@@ -6,30 +6,31 @@ from dbt.tests.adapter.utils.data_types.test_type_numeric import BaseTypeNumeric
 from dbt.tests.adapter.utils.data_types.test_type_string import BaseTypeString
 from dbt.tests.adapter.utils.data_types.test_type_timestamp import BaseTypeTimestamp
 from test_type_bigint import BaseTypeBigInt
-#from dbt.tests.adapter.utils.data_types.test_type_boolean import BaseTypeBoolean
+from dbt.tests.adapter.utils.data_types.test_type_boolean import BaseTypeBoolean
 
 
-class TestTypeBigInt(BaseTypeBigInt):
+
+class TestTypeBigIntExasol(BaseTypeBigInt):
     pass
 
     
-class TestTypeFloat(BaseTypeFloat):
+class TestTypeFloatExasol(BaseTypeFloat):
     pass
 
     
-class TestTypeInt(BaseTypeInt):
+class TestTypeIntExasol(BaseTypeInt):
     pass
 
     
-class TestTypeNumeric(BaseTypeNumeric):
+class TestTypeNumericExasol(BaseTypeNumeric):
     pass
 
     
-class TestTypeString(BaseTypeString):
+class TestTypeStringExasol(BaseTypeString):
     pass
 
     
-class TestTypeTimestamp(BaseTypeTimestamp):
+class TestTypeTimestampExasol(BaseTypeTimestamp):
     @pytest.fixture(scope="class")
     def dbt_profile_target(self):
         return {
@@ -43,5 +44,5 @@ class TestTypeTimestamp(BaseTypeTimestamp):
         }
 
 
-#class TestTypeBoolean(BaseTypeBoolean):
-#    pass
+class TestTypeBooleanExasol(BaseTypeBoolean):
+    pass
