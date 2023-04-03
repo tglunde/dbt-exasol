@@ -1,31 +1,65 @@
-<p align="center">
-  <a href="https://github.com/tglunde/dbt-exasol/actions/workflows/main.yml">
-    <img src="https://github.com/tglunde/dbt-exasol/actions/workflows/main.yml/badge.svg?event=push" alt="Unit Tests Badge"/>
-  </a>
-  <a href="https://github.com/tglunde/dbt-exasol/actions/workflows/integration.yml">
-    <img src="https://github.com/tglunde/dbt-exasol/actions/workflows/integration.yml/badge.svg?event=push" alt="Integration Tests Badge"/>
-  </a>
-</p>
-
 # dbt-exasol
 **[dbt](https://www.getdbt.com/)** enables data analysts and engineers to transform their data using the same practices that software engineers use to build applications.
 
 Please see the dbt documentation on **[Exasol setup](https://docs.getdbt.com/reference/warehouse-setups/exasol-setup)** for more information on how to start using the Exasol adapter.
 
+# Current profile.yml settings
+<File name='profiles.yml'>
+
+```yaml
+dbt-exasol:
+  target: dev
+  outputs:
+    dev:
+      type: exasol
+      threads: 1
+      dsn: HOST:PORT
+      user: USERNAME
+      password: PASSWORD
+      dbname: db
+      schema: SCHEMA
+```
+
+#### Optional parameters
+<ul>
+  <li><strong>connection_timeout</strong>: defaults to pyexasol default</li>
+  <li><strong>socket_timeout</strong>: defaults to pyexasol default</li>
+  <li><strong>query_timeout</strong>: defaults to pyexasol default</li>
+  <li><strong>compression</strong>: default: False</li>
+  <li><strong>encryption</strong>: default: False</li>
+  <li><strong>protocol_version</strong>: default: v3</li>
+  <li><strong>row_separator</strong>: default: CRLF for windows - LF otherwise</li>
+  <li><strong>timestamp_format</strong>: default: YYYY-MM-DDTHH:MI:SS.FF6</li>
+</ul>
+
 # Known isues
-## Timestamp compatibility
-Currently we did not see any possible way to make Exasol accept the timestamp format ```1981-05-20T06:46:51``` with a 'T' as separator between date and time part. To pass the adapter tests we had to change the timestamps in the seed files to have a <space> character instead of the 'T' (```1981-05-20 06:46:51```).
-## Default case of identifiers
-By default Exasol identifiers are upper case. In order to use e.g. seeds or column name aliases - you need to use upper case column names. Alternatively one could add column_quote feature in order to have all columns case sensitive.
-We changed the seeds_base in [files.py](tests/functional/files.py) and [fixtures.py](tests/functional/fixtures.py) in order to reflect this and successfully run the adapter test cases.
-Also, this issue leads to problems for the [base tests for docs generation](https://github.com/dbt-labs/dbt-core/blob/8145eed603266951ce35858f7eef3836012090bd/tests/adapter/dbt/tests/adapter/basic/test_docs_generate.py), since the expected model is being checked case sensitive and fails therefor for Exasol. This will be the last task in [Issue #24](https://github.com/tglunde/dbt-exasol/issues/24) regarding dbt release 1.2. We will suggest a case insensitive version of this standard test or implement for a following minor release of dbt-exasol.
+
+## Breaking changes with release 1.2.2
+- Timestamp format defaults to YYYY-MM-DDTHH:MI:SS.FF6
+
+## SQL functions compatibility
+
+### split_part
+There is no equivalent SQL function in Exasol for split_part.
+
+### listagg part_num
+The SQL function listagg in Exasol does not support the num_part parameter.
 
 ## Utilities shim package
 In order to support packages like dbt-utils and dbt-audit-helper, we needed to create the [shim package exasol-utils](https://github.com/tglunde/exasol-utils). In this shim package we need to adapt to parts of the SQL functionality that is not compatible with Exasol - e.g. when 'final' is being used which is a keyword in Exasol. Please visit [Adaopter dispatch documentation](https://docs.getdbt.com/guides/advanced/adapter-development/3-building-a-new-adapter#adapter-dispatch) of dbt-labs for more information. 
 # Reporting bugs and contributing code
 - Please report bugs using the issues
 
-# Release
+# Release History
+
+## Release 1.2.2
+- Added timestamp format parameter in profile.yml parameter file to set Exasol session parameter NLS_TIMESTAMP_FORMAT when opening a connection. Defaults to 'YYYY-MM-DDTHH:MI:SS.FF6' 
+- Adding row_separator (LF/CRLF) parameter in profile.yml parameter file to be used in seed csv import. Defaults to operating system default (os.linesep in python).
+- bugfix #36 regarding column quotes and case sensitivity of column names. 
+- bugfix #42 regarding datatype change when using snapshot materialization. Added modify column statement in exasol__alter_column_type macro
+- bugfix #17 number format datatype
+- issue #24 - dbt-core v1.2.0 compatibility finished
+
 ## Release 1.2.0
 - support for invalidate_hard_deletes option in snapshots added by jups23
 - added persist_docs support by sti0
