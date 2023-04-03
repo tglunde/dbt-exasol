@@ -1,19 +1,20 @@
 import os
 
 import pytest
+from utils_fixtures import *
 from dbt.exceptions import CompilationException
 from dbt.tests.adapter.utils.base_utils import BaseUtils
 
-# from dbt.tests.adapter.utils.test_array_append import BaseArrayAppend
-# from dbt.tests.adapter.utils.test_array_concat import BaseArrayConcat
-# from dbt.tests.adapter.utils.test_array_construct import BaseArrayConstruct
+from dbt.tests.adapter.utils.test_array_append import BaseArrayAppend
+from dbt.tests.adapter.utils.test_array_concat import BaseArrayConcat
+from dbt.tests.adapter.utils.test_array_construct import BaseArrayConstruct
 from dbt.tests.adapter.utils.test_any_value import BaseAnyValue
 from dbt.tests.adapter.utils.test_bool_or import BaseBoolOr
 from dbt.tests.adapter.utils.test_cast_bool_to_text import BaseCastBoolToText
 from dbt.tests.adapter.utils.test_concat import BaseConcat
 from dbt.tests.adapter.utils.test_date_trunc import BaseDateTrunc
 
-# from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampAware
+from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampNaive
 from dbt.tests.adapter.utils.test_dateadd import BaseDateAdd
 from dbt.tests.adapter.utils.test_datediff import BaseDateDiff
 from dbt.tests.adapter.utils.test_escape_single_quotes import (
@@ -33,10 +34,9 @@ from dbt.tests.adapter.utils.test_safe_cast import BaseSafeCast
 from dbt.tests.adapter.utils.test_split_part import BaseSplitPart
 from dbt.tests.adapter.utils.test_string_literal import BaseStringLiteral
 from dbt.tests.util import run_dbt
-from utils_fixtures import *
 
 
-class TestAnyValue(BaseAnyValue):
+class TestAnyValueExasol(BaseAnyValue):
     @pytest.fixture(scope="class")
     def models(self):
         return {
@@ -46,20 +46,23 @@ class TestAnyValue(BaseAnyValue):
             ),
         }
 
-
-# class TestArrayAppend(BaseArrayAppend):
-#    pass
-
-
-# class TestArrayConcat(BaseArrayConcat):
-#    pass
+@pytest.mark.xfail
+class TestArrayAppendExasol(BaseArrayAppend):
+    pass
 
 
-# class TestArrayConstruct(BaseArrayConstruct):
-#    pass
+@pytest.mark.xfail
+class TestArrayConcatExasol(BaseArrayConcat):
+    pass
 
 
-class TestBoolOr(BaseBoolOr):
+@pytest.mark.xfail
+class TestArrayConstructExasol(BaseArrayConstruct):
+    pass
+
+
+
+class TestBoolOrExasol(BaseBoolOr):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {
@@ -77,7 +80,7 @@ class TestBoolOr(BaseBoolOr):
         }
 
 
-class TestCastBoolToText(BaseCastBoolToText):
+class TestCastBoolToTextExasol(BaseCastBoolToText):
     @pytest.fixture(scope="class")
     def models(self):
         return {
@@ -88,7 +91,7 @@ class TestCastBoolToText(BaseCastBoolToText):
         }
 
 
-class TestConcat(BaseConcat):
+class TestConcatExasol(BaseConcat):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"data_concat.csv": exasol__seeds__data_concat_csv}
@@ -104,11 +107,12 @@ class TestConcat(BaseConcat):
 
 
 # Use either BaseCurrentTimestampAware or BaseCurrentTimestampNaive but not both
-# class TestCurrentTimestamp(BaseCurrentTimestampAware):
-#    pass
+@pytest.mark.xfail
+class TestCurrentTimestampExasol(BaseCurrentTimestampNaive):
+    pass
 
 
-class TestDateAdd(BaseDateAdd):
+class TestDateAddExasol(BaseDateAdd):
     @pytest.fixture(scope="class")
     def project_config_update(self):
         return {
@@ -120,7 +124,7 @@ class TestDateAdd(BaseDateAdd):
                     "data_dateadd": {
                         "+column_types": {
                             "from_time": "timestamp",
-                            "result": "timestamp",
+                            "res": "timestamp",
                         },
                     },
                 },
@@ -141,7 +145,7 @@ class TestDateAdd(BaseDateAdd):
         }
 
 
-class TestDateDiff(BaseDateDiff):
+class TestDateDiffExasol(BaseDateDiff):
     @pytest.fixture(scope="class")
     def dbt_profile_target(self):
         return {
@@ -168,7 +172,7 @@ class TestDateDiff(BaseDateDiff):
         }
 
 
-class TestDateTrunc(BaseDateTrunc):
+class TestDateTruncExasol(BaseDateTrunc):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"data_date_trunc.csv": exasol__seeds__data_date_trunc_csv}
@@ -183,7 +187,7 @@ class TestDateTrunc(BaseDateTrunc):
         }
 
 
-class TestEscapeSingleQuotes(BaseEscapeSingleQuotesBackslash):
+class TestEscapeSingleQuotesExasol(BaseEscapeSingleQuotesBackslash):
     @pytest.fixture(scope="class")
     def models(self):
         return {
@@ -195,7 +199,7 @@ class TestEscapeSingleQuotes(BaseEscapeSingleQuotesBackslash):
         }
 
 
-class BaseEscapeSingleQuotesBackslash(BaseUtils):
+class BaseEscapeSingleQuotesBackslashExasol(BaseUtils):
     @pytest.fixture(scope="class")
     def models(self):
         return {
@@ -207,11 +211,11 @@ class BaseEscapeSingleQuotesBackslash(BaseUtils):
         }
 
 
-class TestExcept(BaseExcept):
+class TestExceptExasol(BaseExcept):
     pass
 
 
-class TestHash(BaseHash):
+class TestHashExasol(BaseHash):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"data_hash.csv": exasol__seeds__data_hash_csv}
@@ -226,11 +230,11 @@ class TestHash(BaseHash):
         }
 
 
-class TestIntersect(BaseIntersect):
+class TestIntersectExasol(BaseIntersect):
     pass
 
 
-class TestLastDay(BaseLastDay):
+class TestLastDayExasol(BaseLastDay):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"data_last_day.csv": exasol__seeds__data_last_day_csv}
@@ -245,7 +249,7 @@ class TestLastDay(BaseLastDay):
         }
 
 
-class TestLength(BaseLength):
+class TestLengthExasol(BaseLength):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"data_length.csv": exasol__seeds__data_length_csv}
@@ -260,7 +264,7 @@ class TestLength(BaseLength):
         }
 
 
-class TestListagg(BaseListagg):
+class TestListaggExasol(BaseListagg):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {
@@ -283,7 +287,7 @@ class TestListagg(BaseListagg):
         assert exc_info.value.msg == "`limit_num` parameter is not supported on Exasol!"
 
 
-class TestPosition(BasePosition):
+class TestPositionExasol(BasePosition):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"data_position.csv": exasol__seeds__data_position_csv}
@@ -298,7 +302,7 @@ class TestPosition(BasePosition):
         }
 
 
-class TestReplace(BaseReplace):
+class TestReplaceExasol(BaseReplace):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"data_replace.csv": exasol__seeds__data_replace_csv}
@@ -313,7 +317,7 @@ class TestReplace(BaseReplace):
         }
 
 
-class TestRight(BaseRight):
+class TestRightExasol(BaseRight):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"data_right.csv": exasol__seeds__data_right_csv}
@@ -328,7 +332,7 @@ class TestRight(BaseRight):
         }
 
 
-class TestSafeCast(BaseSafeCast):
+class TestSafeCastExasol(BaseSafeCast):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"data_safe_cast.csv": exasol__seeds__data_safe_cast_csv}
@@ -346,7 +350,7 @@ class TestSafeCast(BaseSafeCast):
         }
 
 
-class TestSplitPart(BaseSplitPart):
+class TestSplitPartExasol(BaseSplitPart):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"data_split_part.csv": exasol__seeds__data_split_part_csv}
@@ -366,5 +370,5 @@ class TestSplitPart(BaseSplitPart):
         assert exc_info.value.msg == "Unsupported on Exasol! Sorry..."
 
 
-class TestStringLiteral(BaseStringLiteral):
+class TestStringLiteralExasol(BaseStringLiteral):
     pass
