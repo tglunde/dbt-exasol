@@ -8,7 +8,8 @@ from dbt.adapters.sql import SQLAdapter
 from dbt.exceptions import raise_compiler_error
 from dbt.utils import filter_null_values
 
-from dbt.adapters.exasol import ExasolColumn, ExasolConnectionManager, ExasolRelation
+from dbt.adapters.exasol import (ExasolColumn, ExasolConnectionManager,
+                                 ExasolRelation)
 
 
 class ExasolAdapter(SQLAdapter):
@@ -79,3 +80,9 @@ class ExasolAdapter(SQLAdapter):
         if quote_columns:
             return self.quote(column)
         return column
+
+    def valid_incremental_strategies(self):
+        """The set of standard builtin strategies which this adapter supports out-of-the-box.
+        Not used to validate custom strategies defined by end users.
+        """
+        return ["append", "delete+insert"]

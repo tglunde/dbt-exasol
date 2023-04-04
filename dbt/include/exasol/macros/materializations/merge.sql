@@ -1,4 +1,4 @@
-{% macro default__get_delete_insert_merge_sql(target, source, unique_key, dest_columns) -%}
+{% macro exasol__get_delete_insert_merge_sql(target, source, unique_key, dest_columns) -%}
 
     {%- set dest_cols_csv = get_quoted_csv(dest_columns | map(attribute="name")) -%}
 
