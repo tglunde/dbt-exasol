@@ -1,5 +1,5 @@
 """dbt-exasol adapter relation module"""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, Type, TypeVar
 
 from dbt.adapters.base.relation import BaseRelation, Policy
@@ -22,7 +22,7 @@ Self = TypeVar("Self", bound="BaseRelation")
 class ExasolRelation(BaseRelation):
     """Relation implementation for exasol"""
 
-    quote_policy: ExasolQuotePolicy = ExasolQuotePolicy()
+    quote_policy: ExasolQuotePolicy = field(default_factory=lambda: ExasolQuotePolicy())
 
     @classmethod
     # pylint: disable=too-many-arguments

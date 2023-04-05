@@ -5,10 +5,11 @@ from typing import Dict, Optional
 
 import agate
 from dbt.adapters.sql import SQLAdapter
-from dbt.exceptions import raise_compiler_error
+from dbt.exceptions import CompilationError
 from dbt.utils import filter_null_values
 
-from dbt.adapters.exasol import ExasolColumn, ExasolConnectionManager, ExasolRelation
+from dbt.adapters.exasol import (ExasolColumn, ExasolConnectionManager,
+                                 ExasolRelation)
 
 
 class ExasolAdapter(SQLAdapter):
@@ -71,7 +72,7 @@ class ExasolAdapter(SQLAdapter):
         elif quote_config is None:
             pass
         else:
-            raise_compiler_error(
+            raise CompilationError(
                 f'The seed configuration value of "quote_columns" has an '
                 f"invalid type {type(quote_config)}"
             )

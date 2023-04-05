@@ -1,26 +1,22 @@
 import os
 
 import pytest
-from utils_fixtures import *
-from dbt.exceptions import CompilationException
+from dbt.exceptions import CompilationError
 from dbt.tests.adapter.utils.base_utils import BaseUtils
-
+from dbt.tests.adapter.utils.test_any_value import BaseAnyValue
 from dbt.tests.adapter.utils.test_array_append import BaseArrayAppend
 from dbt.tests.adapter.utils.test_array_concat import BaseArrayConcat
 from dbt.tests.adapter.utils.test_array_construct import BaseArrayConstruct
-from dbt.tests.adapter.utils.test_any_value import BaseAnyValue
 from dbt.tests.adapter.utils.test_bool_or import BaseBoolOr
 from dbt.tests.adapter.utils.test_cast_bool_to_text import BaseCastBoolToText
 from dbt.tests.adapter.utils.test_concat import BaseConcat
+from dbt.tests.adapter.utils.test_current_timestamp import \
+    BaseCurrentTimestampNaive
 from dbt.tests.adapter.utils.test_date_trunc import BaseDateTrunc
-
-from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampNaive
 from dbt.tests.adapter.utils.test_dateadd import BaseDateAdd
 from dbt.tests.adapter.utils.test_datediff import BaseDateDiff
-from dbt.tests.adapter.utils.test_escape_single_quotes import (
-    BaseEscapeSingleQuotesBackslash,
-    BaseEscapeSingleQuotesQuote,
-)
+from dbt.tests.adapter.utils.test_escape_single_quotes import \
+    BaseEscapeSingleQuotesBackslash
 from dbt.tests.adapter.utils.test_except import BaseExcept
 from dbt.tests.adapter.utils.test_hash import BaseHash
 from dbt.tests.adapter.utils.test_intersect import BaseIntersect
@@ -34,6 +30,7 @@ from dbt.tests.adapter.utils.test_safe_cast import BaseSafeCast
 from dbt.tests.adapter.utils.test_split_part import BaseSplitPart
 from dbt.tests.adapter.utils.test_string_literal import BaseStringLiteral
 from dbt.tests.util import run_dbt
+from utils_fixtures import *
 
 
 class TestAnyValueExasol(BaseAnyValue):
@@ -282,7 +279,7 @@ class TestListaggExasol(BaseListagg):
         }
 
     def test_build_assert_equal(self, project):
-        with pytest.raises(CompilationException) as exc_info:
+        with pytest.raises(CompilationError) as exc_info:
             run_dbt(["build"], expect_pass=False)
         assert exc_info.value.msg == "`limit_num` parameter is not supported on Exasol!"
 
@@ -365,7 +362,7 @@ class TestSplitPartExasol(BaseSplitPart):
         }
 
     def test_build_assert_equal(self, project):
-        with pytest.raises(CompilationException) as exc_info:
+        with pytest.raises(CompilationError) as exc_info:
             run_dbt(["build"], expect_pass=False)
         assert exc_info.value.msg == "Unsupported on Exasol! Sorry..."
 
