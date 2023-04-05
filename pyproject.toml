@@ -14,9 +14,10 @@ license = "GPL3"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.11.2"
 dbt-core = "^1.4, <1.5"
 pyexasol = "^0.25.0"
+sqlfluff = "^2.0.2"
 
 [tool.poetry.dev-dependencies]
 black = "^22.8.0"

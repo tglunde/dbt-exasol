@@ -85,15 +85,6 @@ AS
     {{ sql }}
 {% endmacro %}
 
-{% macro exasol__current_timestamp() -%}
-  current_timestamp
-{%- endmacro %}
-
-{% macro exasol__snapshot_string_as_time(timestamp) -%}
-    {%- set result = "to_timestamp('" ~ timestamp ~ "')" -%}
-    {{ return(result) }}
-{%- endmacro %}
-
 {% macro exasol__truncate_relation(relation) -%}
   {% call statement('truncate_relation') -%}
     truncate table {{ relation | replace('"', '') }}
