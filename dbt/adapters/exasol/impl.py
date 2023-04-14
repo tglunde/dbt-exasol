@@ -80,3 +80,9 @@ class ExasolAdapter(SQLAdapter):
         if quote_columns:
             return self.quote(column)
         return column
+
+    def valid_incremental_strategies(self):
+        """The set of standard builtin strategies which this adapter supports out-of-the-box.
+        Not used to validate custom strategies defined by end users.
+        """
+        return ["append", "delete+insert"]
