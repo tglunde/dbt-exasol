@@ -34,6 +34,9 @@ dbt-exasol:
 
 # Known isues
 
+## >=1.3 Python model not yet supported - WIP
+- Please follow [this pull request](https://github.com/tglunde/dbt-exasol/pull/59) 
+
 ## Breaking changes with release 1.2.2
 - Timestamp format defaults to YYYY-MM-DDTHH:MI:SS.FF6
 
@@ -50,25 +53,6 @@ In order to support packages like dbt-utils and dbt-audit-helper, we needed to c
 # Reporting bugs and contributing code
 - Please report bugs using the issues
 
-# Release History
+# Releases
 
-## Release 1.2.2
-- Added timestamp format parameter in profile.yml parameter file to set Exasol session parameter NLS_TIMESTAMP_FORMAT when opening a connection. Defaults to 'YYYY-MM-DDTHH:MI:SS.FF6' 
-- Adding row_separator (LF/CRLF) parameter in profile.yml parameter file to be used in seed csv import. Defaults to operating system default (os.linesep in python).
-- bugfix #36 regarding column quotes and case sensitivity of column names. 
-- bugfix #42 regarding datatype change when using snapshot materialization. Added modify column statement in exasol__alter_column_type macro
-- bugfix #17 number format datatype
-- issue #24 - dbt-core v1.2.0 compatibility finished
-
-## Release 1.2.0
-- support for invalidate_hard_deletes option in snapshots added by jups23
-- added persist_docs support by sti0
-- added additional configuration keys that can be included in profiles.yml by johannes-becker-otto
-- added cross-database macros introduced in 1.2 by sti0
-- added support for connection retries by sti0
-- added support for grants by sti0
-- added pytest functional adapter tests by tglunde
-- tox testing for python 3.7.2 through 3.10 added by tglunde
- 
-## Release 1.0.0
-- pyexasol HTTP import csv feature implemented. Optimal performance and compatibility with Exasol CSV parsing
+[GitHub Releases](https://github.com/tglunde/dbt-exasol/releases)
