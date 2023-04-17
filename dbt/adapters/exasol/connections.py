@@ -136,13 +136,13 @@ class ExasolConnectionManager(SQLConnectionManager):
             LOGGER.debug(f"Error running SQL: {sql}")
             LOGGER.debug("Rolling back transaction.")
             self.rollback_if_open()
-            if isinstance(yielded_exception, dbt.exceptions.RuntimeException):
+            if isinstance(yielded_exception, dbt.exceptions.DbtRuntimeError):
                 # during a sql query, an internal to dbt exception was raised.
                 # this sounds a lot like a signal handler and probably has
                 # useful information, so raise it without modification.
                 raise
 
-            raise dbt.exceptions.RuntimeException(yielded_exception)
+            raise dbt.exceptions.DbtRuntimeError(yielded_exception)
 
     @classmethod
     def get_result_from_cursor(cls, cursor: Any) -> agate.Table:
@@ -184,7 +184,7 @@ class ExasolConnectionManager(SQLConnectionManager):
             else:
                 protocol_version = pyexasol.PROTOCOL_V3
         except:
-            raise dbt.exceptions.RuntimeException(
+            raise dbt.exceptions.DbtRuntimeError(
                 f"{credentials.protocol_version} is not a valid protocol version."
             )
 
