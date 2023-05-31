@@ -17,7 +17,7 @@ readme = "README.md"
 python = "^3.8, <3.12"
 dbt-core = "^1.4, <1.5"
 pyexasol = "^0.25.0"
-sqlfluff = "^2.0.2"
+sqlfluff = "^2.0"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.15.8"
