@@ -263,7 +263,10 @@ class ExasolCursor:
             for sql in sqls:
                 self.stmt = self.connection.execute(sql)
         else:
-            self.stmt = self.connection.execute(query)
+            try:
+                self.stmt = self.connection.execute(query)
+            except pyexasol.ExaQueryError as e:
+                raise dbt.exceptions.DbtDatabaseError("Exasol Query Error: " + e.message)
         return self
 
     def fetchone(self):
