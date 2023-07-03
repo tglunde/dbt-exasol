@@ -123,10 +123,10 @@ AS
 
 {% macro exasol__alter_relation_comment(relation, relation_comment) -%}
   {# Comments on views are not supported outside DDL, see https://docs.exasol.com/db/latest/sql/comment.htm#UsageNotes #}
-  {% if not relation.is_view %}
+  {%- if not relation.is_view %}
     {%- set comment = relation_comment | replace("'", '"') %}
     COMMENT ON {{ relation.type }} {{ relation }} IS '{{ comment }}';
-  {% endif %}
+  {%- endif %}
 {% endmacro %}
 
 {% macro get_column_comment_sql(column_name, column_dict, apply_comment=false) -%}
@@ -149,14 +149,14 @@ AS
 
 {% macro exasol__alter_column_comment(relation, column_dict) -%}
   {# Comments on views are not supported outside DDL, see https://docs.exasol.com/db/latest/sql/comment.htm#UsageNotes #}
-  {% if not relation.is_view %}
+  {%- if not relation.is_view %}
     {% set query_columns = get_columns_in_query(sql) %} 
     COMMENT ON {{ relation.type }} {{ relation }} (
     {% for column_name in query_columns %}
       {{ get_column_comment_sql(column_name, column_dict) }} {{- ',' if not loop.last }}
     {% endfor %}
     );
-  {% endif %}
+  {%- endif %}
 {% endmacro %}
 
 {% macro persist_view_column_docs(relation, sql) %}
