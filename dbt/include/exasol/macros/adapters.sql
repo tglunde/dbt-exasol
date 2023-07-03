@@ -122,8 +122,11 @@ AS
 {% endmacro %}
 
 {% macro exasol__alter_relation_comment(relation, relation_comment) -%}
-  {%- set comment = relation_comment | replace("'", '"') %}
-  COMMENT ON {{ relation.type }} {{ relation }} IS '{{ comment }}';
+  {# Comments on views are not supported outside DDL, see https://docs.exasol.com/db/latest/sql/comment.htm#UsageNotes #}
+  {% if not relation.is_view %}
+    {%- set comment = relation_comment | replace("'", '"') %}
+    COMMENT ON {{ relation.type }} {{ relation }} IS '{{ comment }}';
+  {% endif %}
 {% endmacro %}
 
 {% macro get_column_comment_sql(column_name, column_dict, apply_comment=false) -%}
