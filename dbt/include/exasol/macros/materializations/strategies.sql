@@ -36,7 +36,7 @@
         select {{ snapshot_get_time() }} as snapshot_start
     {%- endset %}
 
-    {#-- don't access the column by name, to avoid dealing with casing issues on snowflake #}
+    {#-- don't access the column by name, to avoid dealing with casing issues on exasol #}
     {%- set now = run_query(select_current_time)[0][0] -%}
     {% if now is none or now is undefined -%}
         {%- do exceptions.raise_compiler_error('Could not get a snapshot start time from the database') -%}

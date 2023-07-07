@@ -49,7 +49,7 @@
   -- cleanup
   {% if old_relation is not none %}
     {% if old_relation.type == 'view' %}
-      {#-- This is the primary difference between Snowflake and Redshift. Renaming this view
+      {#-- This is the primary difference between Exasol and Redshift. Renaming this view
         -- would cause an error if the view has become invalid due to upstream schema changes #}
       {{ log("Dropping relation " ~ old_relation ~ " because it is a view and this model is a table.") }}
       {{ drop_relation_if_exists(old_relation) }}
