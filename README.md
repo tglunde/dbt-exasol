@@ -20,6 +20,9 @@ dbt-exasol:
       schema: SCHEMA
 ```
 
+#### Optional login credentials using OpenID for Exasol SaaS
+OpenID login through access_token or refresh_token instead of user+password
+
 #### Optional parameters
 <ul>
   <li><strong>connection_timeout</strong>: defaults to pyexasol default</li>

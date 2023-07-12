@@ -70,10 +70,13 @@ class ExasolCredentials(Credentials):
     """Profile parameters for Exasol in dbt profiles.yml"""
 
     dsn: str
-    user: str
-    password: str
     database: str
     schema: str
+    # One of user+pass, access_token, or refresh_token needs to be specified in profiles.yml
+    user: str = ""
+    password: str = ""
+    access_token: str = ""
+    refresh_token: str = ""
     # optional statements that can be set in profiles.yml
     # some options might interfere with dbt, so caution is advised
     connection_timeout: int = pyexasol.constant.DEFAULT_CONNECTION_TIMEOUT
@@ -193,6 +196,8 @@ class ExasolConnectionManager(SQLConnectionManager):
                 dsn=credentials.dsn,
                 user=credentials.user,
                 password=credentials.password,
+                access_token=credentials.access_token,
+                refresh_token=credentials.refresh_token,
                 autocommit=True,
                 connection_timeout=credentials.connection_timeout,
                 socket_timeout=credentials.socket_timeout,
@@ -263,7 +268,10 @@ class ExasolCursor:
             for sql in sqls:
                 self.stmt = self.connection.execute(sql)
         else:
-            self.stmt = self.connection.execute(query)
+            try:
+                self.stmt = self.connection.execute(query)
+            except pyexasol.ExaQueryError as e:
+                raise dbt.exceptions.DbtDatabaseError("Exasol Query Error: " + e.message)
         return self
 
     def fetchone(self):
