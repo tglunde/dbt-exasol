@@ -24,7 +24,6 @@ TIMESTAMP_FORMAT_DEFAULT = "YYYY-MM-DDTHH:MI:SS.FF6"
 
 LOGGER = AdapterLogger("exasol")
 
-
 def connect(**kwargs: bool):
     """
     Global connect method initializing ExasolConnection
@@ -239,6 +238,10 @@ class ExasolConnectionManager(SQLConnectionManager):
             rows_affected=cursor.rowcount,
             execution_time=cursor.execution_time,
         )
+    
+    @classmethod
+    def data_type_code_to_name(cls, type_code) -> str:
+        return type_code.split("(")[0].upper()
 
 
 class ExasolCursor:

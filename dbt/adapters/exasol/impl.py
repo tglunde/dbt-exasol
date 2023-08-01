@@ -4,12 +4,18 @@ from __future__ import absolute_import
 from typing import Dict, Optional
 
 import agate
+from dbt.adapters.base.meta import available
 from dbt.adapters.sql import SQLAdapter
 from dbt.exceptions import CompilationError
 from dbt.utils import filter_null_values
+from dbt.adapters.base.impl import ConstraintSupport
+from dbt.contracts.graph.nodes import ConstraintType
+
 
 from dbt.adapters.exasol import (ExasolColumn, ExasolConnectionManager,
                                  ExasolRelation)
+
+
 
 
 class ExasolAdapter(SQLAdapter):
@@ -18,6 +24,14 @@ class ExasolAdapter(SQLAdapter):
     Relation = ExasolRelation
     Column = ExasolColumn
     ConnectionManager = ExasolConnectionManager
+
+    CONSTRAINT_SUPPORT = {
+        ConstraintType.check: ConstraintSupport.NOT_SUPPORTED,
+        ConstraintType.not_null: ConstraintSupport.ENFORCED,
+        ConstraintType.unique: ConstraintSupport.NOT_SUPPORTED,
+        ConstraintType.primary_key: ConstraintSupport.ENFORCED,
+        ConstraintType.foreign_key: ConstraintSupport.ENFORCED,
+    }
 
     @classmethod
     def date_function(cls):
@@ -86,3 +100,20 @@ class ExasolAdapter(SQLAdapter):
         Not used to validate custom strategies defined by end users.
         """
         return ["append", "delete+insert"]
+    
+    # @available
+    # @classmethod
+    # def render_raw_columns_constraints(cls, raw_columns: Dict[str, Dict[str, Any]]) -> List:
+    #     rendered_column_constraints = []
+
+    #     for v in raw_columns.values():
+    #         rendered_column_constraint = [f"{v['name']}"]
+    #         for con in v.get("constraints", None):
+    #             constraint = cls._parse_column_constraint(con)
+    #             c = cls.process_parsed_constraint(constraint, cls.render_column_constraint)
+    #             if c is not None:
+    #                 rendered_column_constraint.append(c)
+    #         rendered_column_constraints.append(" ".join(rendered_column_constraint))
+
+    #     return rendered_column_constraints
+    
