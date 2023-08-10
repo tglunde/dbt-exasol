@@ -95,7 +95,6 @@ class TestExasolIncrementalConstraintsColumnsEqual(
             "constraints_schema.yml": exasol_model_schema_yml,
         }
 
-    @pytest.mark.xfail
     def test__constraints_wrong_column_data_types(self, project, string_type, int_type, schema_string_type, schema_int_type, data_types):
         pass
 

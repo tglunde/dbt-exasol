@@ -92,7 +92,6 @@ AS
           {{ get_table_columns_and_constraints() -}};
           {%- set sql = get_select_subquery(sql) %}
         |SEPARATEMEPLEASE|
-        {#- TODO: how to ensure consistency between above columns and insert SQL statement? #}
         INSERT INTO {{ relation.schema }}.{{ relation.identifier }}
         {{ sql }}   
         {%- else %}
