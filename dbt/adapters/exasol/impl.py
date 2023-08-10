@@ -7,6 +7,7 @@ import agate
 from dbt.adapters.sql import SQLAdapter
 from dbt.exceptions import CompilationError
 from dbt.utils import filter_null_values
+from dbt.adapters.base.meta import available
 
 from dbt.adapters.exasol import (ExasolColumn, ExasolConnectionManager,
                                  ExasolRelation)
@@ -85,4 +86,40 @@ class ExasolAdapter(SQLAdapter):
         """The set of standard builtin strategies which this adapter supports out-of-the-box.
         Not used to validate custom strategies defined by end users.
         """
-        return ["append", "delete+insert"]
+        return ["append", "merge", "delete+insert"]
+    
+    @staticmethod
+    def is_valid_identifier(identifier) -> bool:
+        # The first character should be alphabetic
+        if not identifier[0].isalpha():
+            return False
+        # Rest of the characters is either alphanumeric or any one of the literals '#', '$', '_'
+        idx = 1
+        while idx < len(identifier):
+            identifier_chr = identifier[idx]
+            if not identifier_chr.isalnum() and identifier_chr not in ('#', '$', '_'):
+                return False
+            idx += 1
+        return True
+    
+    @available
+    def should_identifier_be_quoted(self,
+                                    identifier,
+                                    models_column_dict=None) -> bool:
+        
+        #Check if the naming is valid
+        if not self.is_valid_identifier(identifier):
+            return True
+        #check if the column is set to be quoted in the model config
+        elif models_column_dict and identifier in models_column_dict:
+            return models_column_dict[identifier].get('quote', False)
+        elif models_column_dict and self.quote(identifier) in models_column_dict:
+            return models_column_dict[self.quote(identifier)].get('quote', False)
+        return False
+    
+    @available
+    def check_and_quote_identifier(self, identifier, models_column_dict=None) -> str:
+        if self.should_identifier_be_quoted(identifier, models_column_dict):
+            return self.quote(identifier)
+        else:
+            return identifier

@@ -21,9 +21,9 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
       lower(table_schema) as [schema],
   	  lower(table_type) as table_type
     from (
-		select table_name,table_schema,'table' as table_type from sys.exa_all_tables
+		select table_name,table_schema,'table' as table_type from sys.exa_user_tables
 		union
-		select view_name, view_schema,'view' from sys.exa_all_views
+		select view_name, view_schema,'view' from sys.exa_user_views
 	  )
     where upper(table_schema) = '{{ schema |upper }}'
 {% endcall %}  
@@ -64,25 +64,45 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
   {{ return(load_result('check_schema_exists').table) }}
 {% endmacro %}
 
+{% macro get_persist_docs_column_list(model_columns, query_columns, view_comment=false) %}
+(
+  {% for column_name in query_columns %}
+    {{ get_column_comment_sql(column_name, model_columns, view_comment) }}
+    {{- ", " if not loop.last else "" }}
+  {% endfor %}
+)
+{% endmacro %}
+
 {% macro exasol__create_view_as(relation, sql) -%}
 CREATE OR REPLACE VIEW {{ relation.schema }}.{{ relation.identifier }} 
-{{- persist_view_column_docs(relation, sql) }}
-AS 
-(
-    {{ sql | indent(4) }}
-)
-{{ persist_view_relation_docs() }}
+  {% if config.persist_column_docs() -%}
+    {% set model_columns = model.columns %}
+    {% set query_columns = get_columns_in_query(sql) %}
+    {{ get_persist_docs_column_list(model_columns, query_columns, view_comment=true) }}
+    {% set model_comment = model.description %}
+  {%- endif %}
+    AS 
+    (
+      {{ sql | indent(4) }}
+    )
+    COMMENT IS '{{ model_comment | replace("'", "''")}}'
+{% endmacro %}
+
+{% macro exasol__create_table_as(temporary, relation, sql) -%}
+  CREATE OR REPLACE TABLE {{ relation.schema }}.{{ relation.identifier }} 
+    {% if config.persist_column_docs() -%}
+      {% set model_comment = model.description %}
+    {%- endif %}
+    as (
+      {{ sql }}
+    )
+    COMMENT IS '{{ model_comment | replace("'", "''")}}';
 {% endmacro %}
 
 {% macro exasol__rename_relation(from_relation, to_relation) -%}
   {% call statement('rename_relation') -%}
     RENAME {{ from_relation.type }} {{ from_relation.schema }}.{{ from_relation.identifier }} TO {{ to_relation.identifier }}
   {%- endcall %}
-{% endmacro %}
-
-{% macro exasol__create_table_as(temporary, relation, sql) -%}
-    CREATE OR REPLACE TABLE {{ relation.schema }}.{{ relation.identifier }} AS 
-    {{ sql }}
 {% endmacro %}
 
 {% macro exasol__truncate_relation(relation) -%}
@@ -122,11 +142,33 @@ AS
 {% endmacro %}
 
 {% macro exasol__alter_relation_comment(relation, relation_comment) -%}
-  {%- set comment = relation_comment | replace("'", '"') %}
-  COMMENT ON {{ relation.type }} {{ relation }} IS '{{ comment }}';
+  {# Comments on views are not supported outside DDL, see https://docs.exasol.com/db/latest/sql/comment.htm#UsageNotes #}
+  {%- if not relation.is_view %}
+    {%- set comment = relation_comment | replace("'", "''") %}
+      COMMENT ON {{ relation.type }} {{ relation }} IS '{{ comment }}';
+  {%- endif %}
 {% endmacro %}
 
-{% macro get_column_comment_sql(column_name, column_dict, apply_comment=false) -%}
+
+{% macro exasol__alter_column_comment(relation, column_dict) -%}
+  {# Comments on views are not supported outside DDL, see https://docs.exasol.com/db/latest/sql/comment.htm#UsageNotes #}
+  {%- if not relation.is_view %}
+    {% set query_columns = get_columns_in_query(sql) %} 
+    COMMENT ON {{ relation.type }} {{ relation }} (
+    {% for column_name in query_columns %}
+      {{ get_column_comment_sql(column_name, column_dict) }} {{- ',' if not loop.last }}
+    {% endfor %}
+    );
+  {%- endif %}
+{% endmacro %}
+
+{% macro exasol__alter_column_type(relation, column_name, new_column_type) -%}
+  {% call statement('alter_column_type') %}
+    alter table {{ relation }} modify column {{ adapter.quote(column_name) }} {{ new_column_type }};
+  {% endcall %}
+{% endmacro %}
+
+{% macro get_column_comment_sql(column_name, column_dict, view_comment=false) -%}
   {% if (column_name|upper in column_dict) -%}
     {% set matched_column = column_name|upper -%}
   {% elif (column_name|lower in column_dict) -%}
@@ -136,42 +178,39 @@ AS
   {% else -%}
     {% set matched_column = None -%}
   {% endif -%}
-  {% if matched_column -%}
-    {% set comment = column_dict[matched_column]['description'] | replace("'", '"') -%}
-  {% else -%}
-    {% set comment = "" -%}
-  {% endif -%}
-  {{ adapter.quote(column_name) }} {{ "COMMENT" if apply_comment }} IS '{{ comment }}'
-{%- endmacro %}
-
-{% macro exasol__alter_column_comment(relation, column_dict) -%}
-    {% set query_columns = get_columns_in_query(sql) %} 
-    COMMENT ON {{ relation.type }} {{ relation }} (
-    {% for column_name in query_columns %}
-        {{ get_column_comment_sql(column_name, column_dict) }} {{- ',' if not loop.last }}
-    {% endfor %}
-    );
+  {% if not matched_column -%}
+    {{ adapter.quote(column_name) }} {{"COMMENT" if view_comment}} IS ''
+  {%- else -%}
+    {{ adapter.quote(column_name) }} {{"COMMENT" if view_comment}}  IS '{{ column_dict[matched_column]['description'] | replace("'", "''") }}'
+  {%- endif -%}
 {% endmacro %}
 
-{% macro persist_view_column_docs(relation, sql) %}
-{%- if config.persist_column_docs() %}
-(
-  {% set query_columns = get_columns_in_query(sql) %}
-  {%- for column_name in query_columns %}
-      {{ get_column_comment_sql(column_name, model.columns, true) -}}{{ ',' if not loop.last -}}
-  {%- endfor %}
-)
-{%- endif %}
-{%- endmacro %}
+{% macro exasol__alter_relation_add_remove_columns(relation, add_columns, remove_columns) %}
 
-{% macro persist_view_relation_docs() %}
-{%- if config.persist_relation_docs() %}
-COMMENT IS '{{ model.description }}'
-{%- endif %}
-{% endmacro %}
+  {% if add_columns is none %}
+    {% set add_columns = [] %}
+  {% endif %}
+  {% if remove_columns is none %}
+    {% set remove_columns = [] %}
+  {% endif %}
 
-{% macro exasol__alter_column_type(relation, column_name, new_column_type) -%}
-  {% call statement('alter_column_type') %}
-    alter table {{ relation }} modify column {{ adapter.quote(column_name) }} {{ new_column_type }};
-  {% endcall %}
+
+
+            {% for column in add_columns %}
+              {% set sql -%}
+                  alter {{ relation.type }} {{ relation }} add column {{ column.name }} {{ column.data_type }};
+              {%- endset -%}
+              {% do run_query(sql) %}
+            {% endfor %}
+
+            {% for column in remove_columns %}
+              {% set sql -%}
+                 alter {{ relation.type }} {{ relation }} drop column {{ column.name }};
+              {%- endset -%}
+              {% do run_query(sql) %}
+            {% endfor %}
+            
+
+ 
+
 {% endmacro %}
