@@ -224,7 +224,7 @@ COMMENT IS '{{ model.description | replace("'", "''")}}'
 
  
 
-{% macro exasol__get_empty_subquery_sql(select_sql) %}
+{% macro exasol__get_empty_subquery_sql(select_sql, select_sql_header=none) %}
     select * from (
         {{ select_sql }}
     ) dbt_sbq_tmp
