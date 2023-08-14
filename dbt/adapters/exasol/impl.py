@@ -4,13 +4,19 @@ from __future__ import absolute_import
 from typing import Dict, Optional
 
 import agate
+from dbt.adapters.base.meta import available
 from dbt.adapters.sql import SQLAdapter
 from dbt.exceptions import CompilationError
 from dbt.utils import filter_null_values
 from dbt.adapters.base.meta import available
+from dbt.adapters.base.impl import ConstraintSupport
+from dbt.contracts.graph.nodes import ConstraintType
+
 
 from dbt.adapters.exasol import (ExasolColumn, ExasolConnectionManager,
                                  ExasolRelation)
+
+
 
 
 class ExasolAdapter(SQLAdapter):
@@ -19,6 +25,14 @@ class ExasolAdapter(SQLAdapter):
     Relation = ExasolRelation
     Column = ExasolColumn
     ConnectionManager = ExasolConnectionManager
+
+    CONSTRAINT_SUPPORT = {
+        ConstraintType.check: ConstraintSupport.NOT_SUPPORTED,
+        ConstraintType.not_null: ConstraintSupport.ENFORCED,
+        ConstraintType.unique: ConstraintSupport.NOT_SUPPORTED,
+        ConstraintType.primary_key: ConstraintSupport.ENFORCED,
+        ConstraintType.foreign_key: ConstraintSupport.ENFORCED,
+    }
 
     @classmethod
     def date_function(cls):

@@ -64,6 +64,10 @@ ALTER_COLUMN_TYPE_MACRO_NAME = 'alter_column_type'
 {% endmacro %}
 
 {% macro exasol__create_view_as(relation, sql) -%}
+{%- set contract_config = config.get('contract') -%}
+   {%- if contract_config.enforced -%}
+      {{ get_assert_columns_equivalent(sql) }}
+   {%- endif %}
 CREATE OR REPLACE VIEW {{ relation.schema }}.{{ relation.identifier }} 
 {{- persist_view_column_docs(relation, sql) }}
 AS 
@@ -80,8 +84,19 @@ AS
 {% endmacro %}
 
 {% macro exasol__create_table_as(temporary, relation, sql) -%}
-    CREATE OR REPLACE TABLE {{ relation.schema }}.{{ relation.identifier }} AS 
-    {{ sql }}
+    {%- set contract_config = config.get('contract') -%}
+    CREATE OR REPLACE TABLE {{ relation.schema }}.{{ relation.identifier }} 
+        {%- if contract_config.enforced -%}
+          {{- get_assert_columns_equivalent(sql) }}
+          {{ get_table_columns_and_constraints() -}};
+          {%- set sql = get_select_subquery(sql) %}
+        |SEPARATEMEPLEASE|
+        INSERT INTO {{ relation.schema }}.{{ relation.identifier }}
+        {{ sql }}   
+        {%- else %}
+        AS 
+        {{ sql }}
+        {% endif %}
 {% endmacro %}
 
 {% macro exasol__truncate_relation(relation) -%}
@@ -205,8 +220,12 @@ COMMENT IS '{{ model.description | replace("'", "''")}}'
               {%- endset -%}
               {% do run_query(sql) %}
             {% endfor %}
-            
+{% endmacro %}            
 
  
 
+{% macro exasol__get_empty_subquery_sql(select_sql) %}
+    select * from (
+        {{ select_sql }}
+    ) dbt_sbq_tmp
 {% endmacro %}
