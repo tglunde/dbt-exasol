@@ -6,6 +6,7 @@ from dbt.tests.adapter.constraints.fixtures import (
     my_model_sql,
     my_model_wrong_name_sql,
     my_model_wrong_order_sql,
+    my_model_with_quoted_column_name_sql,
 )
 from dbt.tests.adapter.constraints.test_constraints import (
     BaseConstraintsRollback,
@@ -16,6 +17,7 @@ from dbt.tests.adapter.constraints.test_constraints import (
     BaseModelConstraintsRuntimeEnforcement,
     BaseTableConstraintsColumnsEqual,
     BaseViewConstraintsColumnsEqual,
+    BaseConstraintQuotedColumn
 )
 
 from dbt.tests.util import (
@@ -30,9 +32,10 @@ from dbt.tests.util import (
 from tests.functional.adapter.constraints.fixtures import (
     exasol_constrained_model_schema_yml,
     exasol_model_schema_yml,
+    exasol_quoted_column_schema_yml,
     my_model_view_wrong_order_sql,
     my_model_view_wrong_name_sql,
-    exasol_expected_sql
+    exasol_expected_sql,
 )
 
 class ExasolColumnEqualSetup:
@@ -42,7 +45,7 @@ class ExasolColumnEqualSetup:
     
     @pytest.fixture
     def int_type(self):
-        return "DECIMAL(10,2)"
+        return "INTEGER"
 
     @pytest.fixture
     def data_types(self, schema_int_type, int_type, string_type):
@@ -53,7 +56,7 @@ class ExasolColumnEqualSetup:
             ["cast('2019-01-01' as date)", "date", "DATE"],
             ["true", "boolean", "BOOLEAN"],
             ["cast('2013-11-03T00:00:00.000000' as TIMESTAMP)", "timestamp(6)", "TIMESTAMP"],
-            ["cast('1' as DECIMAL(10,2))", "DECIMAL", "DECIMAL"],
+            ["cast('1.0' as DECIMAL(10,2))", "DECIMAL", "DECIMAL"],
         ]
 
 
@@ -195,7 +198,7 @@ class TestExasolModelConstraintsRuntimeEnforcement(BaseModelConstraintsRuntimeEn
     def expected_sql(self):
         return """
 create or replace table <model_identifier> ( 
-    id decimal(10,2) not null, 
+    id integer not null, 
     color char(50), 
     date_day char(50), 
     primary key (id) ) ; 
@@ -210,3 +213,31 @@ create or replace table <model_identifier> (
         'blue' as color, 
         '2019-01-01' as date_day ) as model_subq
 """
+
+class TestExasolConstraintQuotedColumn(BaseConstraintQuotedColumn):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model.sql": my_model_with_quoted_column_name_sql,
+            "constraints_schema.yml": exasol_quoted_column_schema_yml,
+        }
+    
+    @pytest.fixture(scope="class")
+    def expected_sql(self):
+        return """
+        create or replace table <model_identifier> (
+            id integer not null,
+            "from" char(50) not null,
+            date_day char(50)
+        ) ;
+        |separatemeplease|
+        insert into <model_identifier>
+        
+            select id, "from", date_day
+            from (
+                select
+                'blue' as "from",
+                1 as id,
+                '2019-01-01' as date_day
+            ) as model_subq
+        """
