@@ -37,6 +37,23 @@ OpenID login through access_token or refresh_token instead of user+password
 
 # Known isues
 
+## Model contracts
+The following database constraints are implemented for Exasol:
+
+| Constraint Type  | Status |
+| ------------- | ------------- |
+| check | NOT supported  |
+| not null  | enforced  |
+| unique  | NOT supported  |
+| primary key  | enforced  |
+| foreign key  | enforced  |
+
+## >=1.5 Incrmental model update
+Fallback to dbt-core implementation and supporting strategies 
+- append
+- merge
+- delete+insert
+
 ## >=1.3 Python model not yet supported - WIP
 - Please follow [this pull request](https://github.com/tglunde/dbt-exasol/pull/59) 
 
