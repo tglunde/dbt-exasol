@@ -12,7 +12,7 @@ from dbt.tests.adapter.concurrency.test_concurrency import (
     )
 
 class TestConcurrencyExasol(BaseConcurrency):
-    def test_conncurrency_snowflake(self, project):
+    def test_conncurrency_exasol(self, project):
         run_dbt(["seed", "--select", "seed"])
         results = run_dbt(["run"], expect_pass=False)
         assert len(results) == 7

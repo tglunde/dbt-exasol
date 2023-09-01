@@ -13,7 +13,7 @@
 		  	OBJECT_NAME as table_name,
 		  	ROOT_NAME as table_owner,
 		  	OBJECT_TYPE AS table_type,
-		  	OBJECT_COMMENT
+		  	OBJECT_COMMENT as table_comment
 		  from sys.EXA_USER_OBJECTS 
 		  WHERE OBJECT_TYPE IN('TABLE', 'VIEW')
   
@@ -34,7 +34,8 @@
     )
 
     select tabs.table_owner as [table_owner],
-		   tabs.table_type AS [table_type],
+		       tabs.table_type AS [table_type],
+           tabs.table_comment as [table_comment],
            cols.table_database as [table_database],
            cols.table_schema as [table_schema],
            cols.table_name as [table_name],

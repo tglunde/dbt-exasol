@@ -1,4 +1,3 @@
-
 /* 
 LIST_RELATIONS_MACRO_NAME = 'list_relations_without_caching'
 GET_COLUMNS_IN_RELATION_MACRO_NAME = 'get_columns_in_relation'
@@ -139,7 +138,7 @@ AS
 {% macro exasol__alter_relation_comment(relation, relation_comment) -%}
   {# Comments on views are not supported outside DDL, see https://docs.exasol.com/db/latest/sql/comment.htm#UsageNotes #}
   {%- if not relation.is_view %}
-    {%- set comment = relation_comment | replace("'", '"') %}
+    {%- set comment = relation_comment | replace("'", "''") %}
     COMMENT ON {{ relation.type }} {{ relation }} IS '{{ comment }}';
   {%- endif %}
 {% endmacro %}
@@ -155,7 +154,7 @@ AS
     {% set matched_column = None -%}
   {% endif -%}
   {% if matched_column -%}
-    {% set comment = column_dict[matched_column]['description'] | replace("'", '"') -%}
+    {% set comment = column_dict[matched_column]['description'] | replace("'", "''") -%}
   {% else -%}
     {% set comment = "" -%}
   {% endif -%}
@@ -187,7 +186,7 @@ AS
 
 {% macro persist_view_relation_docs() %}
 {%- if config.persist_relation_docs() %}
-COMMENT IS '{{ model.description }}'
+COMMENT IS '{{ model.description | replace("'", "''")}}'
 {%- endif %}
 {% endmacro %}
 
@@ -197,7 +196,7 @@ COMMENT IS '{{ model.description }}'
   {% endcall %}
 {% endmacro %}
 
-{% macro exasol__get_empty_subquery_sql(select_sql, sql_header=None ) %}
+{% macro exasol__get_empty_subquery_sql(select_sql, select_sql_header=None ) %}
     select * from (
         {{ select_sql }}
     ) dbt_sbq_tmp
