@@ -7,8 +7,7 @@ models:
         enforced: true
     columns:
       - name: id
-        quote: true
-        data_type: decimal(10,2)
+        data_type: integer
         description: hello
         constraints:
           - type: not_null
@@ -26,7 +25,7 @@ models:
         enforced: true
     columns:
       - name: id
-        data_type: decimal(10,2)
+        data_type: integer
         description: hello
         constraints:
           - type: not_null
@@ -44,7 +43,7 @@ models:
         enforced: true
     columns:
       - name: id
-        data_type: decimal(10,2)
+        data_type: integer
         description: hello
         constraints:
           - type: not_null
@@ -62,7 +61,7 @@ models:
         enforced: true
     columns:
       - name: id
-        data_type: decimal(10,2)
+        data_type: integer
         description: hello
         constraints:
           - type: not_null
@@ -93,8 +92,7 @@ models:
         name: strange_uniqueness_requirement
     columns:
       - name: id
-        quote: true
-        data_type: decimal(10,2)
+        data_type: integer
         description: hello
         constraints:
           - type: not_null
@@ -102,6 +100,36 @@ models:
           - unique
       - name: color
         data_type: char(50)
+      - name: date_day
+        data_type: char(50)
+"""
+
+exasol_quoted_column_schema_yml = """
+version: 2
+models:
+  - name: my_model
+    config:
+      contract:
+        enforced: true
+      materialized: table
+    constraints:
+      - type: check
+        # this one is the on the user
+        expression: ("from" = 'blue')
+        columns: [ '"from"' ]
+    columns:
+      - name: id
+        data_type: integer
+        description: hello
+        constraints:
+          - type: not_null
+        tests:
+          - unique
+      - name: from  # reserved word
+        quote: true
+        data_type: char(50)
+        constraints:
+          - type: not_null
       - name: date_day
         data_type: char(50)
 """
@@ -115,7 +143,7 @@ my_model_view_wrong_order_sql = """
 
 select
   cast('blue' as char(50)) as color,
-  cast(1 as decimal(10,2)) as id,
+  cast(1 as integer) as id,
   cast('2019-01-01' as char(50)) as date_day
 """
 
@@ -128,7 +156,7 @@ my_model_view_wrong_name_sql = """
 
 select
   cast('blue' as char(50)) as color,
-  cast(1 as decimal(10,2)) as error,
+  cast(1 as integer) as error,
   cast('2019-01-01' as char(50)) as date_day
 """
 
@@ -146,7 +174,7 @@ select
 
 exasol_expected_sql = """
 create or replace table <model_identifier> ( 
-    id decimal(10,2) not null, 
+    id integer not null, 
     color char(50), 
     date_day char(50) 
     ) ; 
