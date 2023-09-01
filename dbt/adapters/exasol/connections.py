@@ -4,6 +4,7 @@
 DBT adapter connection implementation for Exasol.
 """
 import decimal
+from dateutil import parser
 import os
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -162,6 +163,11 @@ class ExasolConnectionManager(SQLConnectionManager):
                         for rownum, row in enumerate(rows):
                             tmp = list(row)
                             tmp[idx] = decimal.Decimal(row[idx])
+                            rows[rownum] = tmp
+                    elif col[1].startswith('TIMESTAMP'):
+                        for rownum, row in enumerate(rows):
+                            tmp = list(row)
+                            tmp[idx] = parser.parse(row[idx])
                             rows[rownum] = tmp
             data = cls.process_results(column_names, rows)
 
