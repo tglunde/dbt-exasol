@@ -29,13 +29,16 @@ OpenID login through access_token or refresh_token instead of user+password
   <li><strong>socket_timeout</strong>: defaults to pyexasol default</li>
   <li><strong>query_timeout</strong>: defaults to pyexasol default</li>
   <li><strong>compression</strong>: default: False</li>
-  <li><strong>encryption</strong>: default: False</li>
+  <li><strong>encryption</strong>: default: True</li>
   <li><strong>protocol_version</strong>: default: v3</li>
   <li><strong>row_separator</strong>: default: CRLF for windows - LF otherwise</li>
   <li><strong>timestamp_format</strong>: default: YYYY-MM-DDTHH:MI:SS.FF6</li>
 </ul>
 
 # Known isues
+
+## Using encryption in Exasol 7 vs. 8
+Starting from Exasol 8, encryption is enforced by default. If you are still using Exasol 7 and have trouble connecting, you can disable encryption in profiles.yaml (see optional parameters).
 
 ## Model contracts
 The following database constraints are implemented for Exasol:

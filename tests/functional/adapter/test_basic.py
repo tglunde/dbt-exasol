@@ -77,6 +77,16 @@ class TestDocsGenerateExasol(BaseDocsGenerate):
         }
 
 class TestDocsGenReferencesExasol(BaseDocsGenReferences):
+
+    # TODO:
+    # Exasol 8 throws this error, don't know yet where difference comes from:
+    #     AssertionError("Key 'columns' in 'model.test.model' did not match\n
+    # assert {'EMAIL': {'c...) UTF8'}, ...} == {'EMAIL': {'c...) UTF8'}, ...}\n  Omitting 4 identical items, use -vv to show\n  Differing items:\n  
+    # {'UPDATED_AT': {'comment': None, 'index': 5, 
+    # 'name': 'UPDATED_AT', 
+    # 'type': 'TIMESTAMP(3)'}} != 
+    # {'UPDATED_AT': {'comment': None, 'index': <dbt.tests.util.AnyInteger object at 0x1069a5250>, 
+    # 'name': 'UPDATED_AT', 'type': 'TIMESTAMP'}}\n  Use -v to get more diff")
     
     @pytest.fixture(scope="class")
     def dbt_profile_target(self):
