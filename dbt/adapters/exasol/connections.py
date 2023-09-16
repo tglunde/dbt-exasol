@@ -4,7 +4,6 @@
 DBT adapter connection implementation for Exasol.
 """
 import decimal
-from dateutil import parser
 import os
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -13,6 +12,7 @@ from typing import Any, List, Optional
 import agate
 import dbt.exceptions
 import pyexasol
+from dateutil import parser
 from dbt.adapters.base import Credentials  # type: ignore
 from dbt.adapters.sql import SQLConnectionManager  # type: ignore
 from dbt.contracts.connection import AdapterResponse
@@ -24,6 +24,7 @@ ROW_SEPARATOR_DEFAULT = "LF" if os.linesep == "\n" else "CRLF"
 TIMESTAMP_FORMAT_DEFAULT = "YYYY-MM-DDTHH:MI:SS.FF6"
 
 LOGGER = AdapterLogger("exasol")
+
 
 def connect(**kwargs: bool):
     """
@@ -148,13 +149,16 @@ class ExasolConnectionManager(SQLConnectionManager):
             raise dbt.exceptions.DbtRuntimeError(yielded_exception)
 
     @classmethod
-    def get_result_from_cursor(cls, cursor: Any) -> agate.Table:
+    def get_result_from_cursor(cls, cursor: Any, limit: Optional[int]) -> agate.Table:
         data: List[Any] = []
         column_names: List[str] = []
 
         if cursor.description is not None:
             # column_names = [col[0] for col in cursor.description]
-            rows = cursor.fetchall()
+            if limit:
+                rows = cursor.fetchmany(limit)
+            else:
+                rows = cursor.fetchall()
             for idx, col in enumerate(cursor.description):
                 column_names.append(col[0])
                 if len(rows) > 0 and isinstance(rows[0][idx], str):
@@ -163,7 +167,7 @@ class ExasolConnectionManager(SQLConnectionManager):
                             tmp = list(row)
                             tmp[idx] = decimal.Decimal(row[idx])
                             rows[rownum] = tmp
-                    elif col[1].startswith('TIMESTAMP'):
+                    elif col[1].startswith("TIMESTAMP"):
                         for rownum, row in enumerate(rows):
                             tmp = list(row)
                             tmp[idx] = parser.parse(row[idx])
@@ -244,7 +248,7 @@ class ExasolConnectionManager(SQLConnectionManager):
             rows_affected=cursor.rowcount,
             execution_time=cursor.execution_time,
         )
-    
+
     @classmethod
     def data_type_code_to_name(cls, type_code) -> str:
         return type_code.split("(")[0].upper()
@@ -280,7 +284,9 @@ class ExasolCursor:
             try:
                 self.stmt = self.connection.execute(query)
             except pyexasol.ExaQueryError as e:
-                raise dbt.exceptions.DbtDatabaseError("Exasol Query Error: " + e.message)
+                raise dbt.exceptions.DbtDatabaseError(
+                    "Exasol Query Error: " + e.message
+                )
         return self
 
     def fetchone(self):
