@@ -4,7 +4,6 @@
 DBT adapter connection implementation for Exasol.
 """
 import decimal
-from dateutil import parser
 import os
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -13,6 +12,7 @@ from typing import Any, List, Optional
 import agate
 import dbt.exceptions
 import pyexasol
+from dateutil import parser
 from dbt.adapters.base import Credentials  # type: ignore
 from dbt.adapters.sql import SQLConnectionManager  # type: ignore
 from dbt.contracts.connection import AdapterResponse
