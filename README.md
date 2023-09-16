@@ -37,6 +37,11 @@ OpenID login through access_token or refresh_token instead of user+password
 
 # Known isues
 
+## Null handling in test_utils null safe handling
+In Exasol empty string are NULL. Due to this behaviour and as of [this pull request 7776 published in dbt-core 1.6](https://github.com/dbt-labs/dbt-core/pull/7776),
+seeds in tests that use EMPTY literal to simulate empty string have to be handled with special behaviour in exasol.
+See fixture for csv in exasol__seeds__data_hash_csv for tests/functional/adapter/utils/test_utils.py::TestHashExasol. 
+
 ## Model contracts
 The following database constraints are implemented for Exasol:
 
