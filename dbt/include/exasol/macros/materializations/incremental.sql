@@ -3,7 +3,7 @@
   {% set unique_key = config.get('unique_key') %}
   {%- set language = model['language'] -%}
   {% set target_relation = this.incorporate(type='table') %}
-  {% set existing_relation = load_relation(this) %}
+  {% set existing_relation = load_cached_relation(this) %}
   {% set tmp_relation = make_temp_relation(this) %}
   {% set on_schema_change = incremental_validate_on_schema_change(config.get('on_schema_change'), default='ignore') %}
   {% set  grant_config = config.get('grants') %}
