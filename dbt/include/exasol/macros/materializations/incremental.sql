@@ -1,13 +1,14 @@
 {% materialization incremental, adapter='exasol', supported_languages=['sql'] %}
 
   {% set unique_key = config.get('unique_key') %}
-  {% set full_refresh_mode = flags.FULL_REFRESH %}
   {%- set language = model['language'] -%}
   {% set target_relation = this.incorporate(type='table') %}
   {% set existing_relation = load_cached_relation(this) %}
   {% set tmp_relation = make_temp_relation(this) %}
   {% set on_schema_change = incremental_validate_on_schema_change(config.get('on_schema_change'), default='ignore') %}
   {% set  grant_config = config.get('grants') %}
+  {%- set full_refresh_mode = (should_full_refresh()  or existing_relation.is_view) -%}
+
 
   {{ run_hooks(pre_hooks, inside_transaction=False) }}
 
@@ -17,7 +18,7 @@
   {% set to_drop = [] %}
   {% if existing_relation is none %}
       {% set build_sql = create_table_as(False, target_relation, sql) %}
-  {% elif existing_relation.is_view or full_refresh_mode %}
+  {% elif full_refresh_mode %}
       {#-- Checking if backup relation exists#}
       {% set backup_identifier = existing_relation.identifier ~ "__dbt_backup" %}
       {% set backup_relation = existing_relation.incorporate(path={"identifier": backup_identifier}) %}
