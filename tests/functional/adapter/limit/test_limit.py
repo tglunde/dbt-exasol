@@ -1,6 +1,10 @@
+import pytest
 from dbt.tests.adapter.basic.test_base import BaseSimpleMaterializations
 from dbt.tests.util import run_dbt, run_dbt_and_capture
 from dbt.tests.adapter.dbt_show.test_dbt_show import BaseShowSqlHeader, BaseShowLimit
+from tests.functional.adapter.limit.fixtures import (
+    exasol__sql_header
+)
 
 
 class TestLimitExasol(BaseSimpleMaterializations):
@@ -23,4 +27,8 @@ class TestShowLimitExasol(BaseShowLimit):
 
 
 class TestShowSqlHeaderExasol(BaseShowSqlHeader):
-    pass
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "sql_header.sql": exasol__sql_header,
+        }

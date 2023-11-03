@@ -39,7 +39,7 @@ from tests.functional.adapter.constraints.fixtures import (
     exasol_expected_sql,
     exasol_model_contract_sql_header_sql,
     exasol_model_incremental_contract_sql_header,
-    exasol_model_contract_header_schema_yml,
+    exasol_model_contract_header_schema_yml
 )
 
 
@@ -236,7 +236,7 @@ class TestExasolModelConstraintsRuntimeEnforcement(
     def expected_sql(self):
         return """
 create or replace table <model_identifier> ( 
-    id integer not null, 
+    id decimal(18,0) not null, 
     color char(50), 
     date_day char(50), 
     primary key (id) ) ; 
@@ -265,7 +265,7 @@ class TestExasolConstraintQuotedColumn(BaseConstraintQuotedColumn):
     def expected_sql(self):
         return """
         create or replace table <model_identifier> (
-            id integer not null,
+            id decimal(18,0) not null,
             "from" char(50) not null,
             date_day char(50)
         ) ;
