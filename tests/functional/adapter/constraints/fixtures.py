@@ -182,3 +182,42 @@ create or replace table <model_identifier> (
     insert into <model_identifier> 
     select id, color, date_day from ( select 'blue' as color, 1 as id, '2019-01-01' as date_day ) as model_subq
 """
+
+exasol_model_contract_sql_header_sql = """
+{{
+  config(
+    materialized = "table"
+  )
+}}
+
+{% call set_sql_header(config) %}
+alter session set TIME_ZONE = 'Asia/Kolkata';
+{%- endcall %}
+select session_parameter(current_session, 'TIME_ZONE') as column_name
+"""
+
+exasol_model_incremental_contract_sql_header = """
+{{
+  config(
+    materialized = "incremental",
+    on_schema_change="append_new_columns"
+  )
+}}
+
+{% call set_sql_header(config) %}
+alter session set TIME_ZONE = 'Asia/Kolkata';
+{%- endcall %}
+select session_parameter(current_session, 'TIME_ZONE') as column_name
+"""
+
+exasol_model_contract_header_schema_yml = """
+version: 2
+models:
+  - name: my_model_contract_sql_header
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: column_name
+        data_type: varchar(2000000)
+"""
