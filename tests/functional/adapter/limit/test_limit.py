@@ -1,5 +1,6 @@
 from dbt.tests.adapter.basic.test_base import BaseSimpleMaterializations
 from dbt.tests.util import run_dbt, run_dbt_and_capture
+from dbt.tests.adapter.dbt_show.test_dbt_show import BaseShowSqlHeader, BaseShowLimit
 
 
 class TestLimitExasol(BaseSimpleMaterializations):
@@ -15,3 +16,11 @@ class TestLimitExasol(BaseSimpleMaterializations):
         assert "Previewing node 'view_model'" in log_output
         assert "5 | Hannah" in log_output
         assert "6 | Eleanor" not in log_output
+
+
+class TestShowLimitExasol(BaseShowLimit):
+    pass
+
+
+class TestShowSqlHeaderExasol(BaseShowSqlHeader):
+    pass
