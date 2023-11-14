@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dbt-exasol"
-version = "1.4.5"
+version = "1.4.6"
 description = "Adapter to dbt-core for warehouse Exasol"
 authors = ["Torsten Glunde <torsten.glunde@alligator-company.com>", "Ilija Kutle <ilija.kutle@alligator-company.com>"]
 homepage = "https://alligatorcompany.gitlab.io/dbt-exasol"
