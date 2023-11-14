@@ -160,11 +160,13 @@ class ExasolConnectionManager(SQLConnectionManager):
                 if len(rows) > 0 and isinstance(rows[0][idx], str):
                     if col[1] in ["DECIMAL", "BIGINT"]:
                         for rownum, row in enumerate(rows):
+                            if row[idx] is None: continue
                             tmp = list(row)
                             tmp[idx] = decimal.Decimal(row[idx])
                             rows[rownum] = tmp
                     elif col[1].startswith('TIMESTAMP'):
                         for rownum, row in enumerate(rows):
+                            if row[idx] is None: continue
                             tmp = list(row)
                             tmp[idx] = parser.parse(row[idx])
                             rows[rownum] = tmp
