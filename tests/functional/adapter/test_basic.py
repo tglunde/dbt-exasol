@@ -14,7 +14,11 @@ from dbt.tests.adapter.basic.test_snapshot_check_cols import BaseSnapshotCheckCo
 from dbt.tests.adapter.basic.test_snapshot_timestamp import BaseSnapshotTimestamp
 from dbt.tests.adapter.basic.test_validate_connection import BaseValidateConnection
 from test_docs_generate import (BaseDocsGenerate, BaseDocsGenReferences)
-
+from expected_catalog import (
+    base_expected_catalog,
+    no_stats,
+    expected_references_catalog,
+)
 
 class TestSimpleMaterializationsExasol(BaseSimpleMaterializations):
     pass
@@ -75,9 +79,25 @@ class TestDocsGenerateExasol(BaseDocsGenerate):
            "dbname": "DB",
            "timestamp_format": "YYYY-MM-DD HH:MI:SS.FF6"
         }
+    
+    @pytest.fixture(scope="class")
+    def expected_catalog(self, project, unique_schema):
+        return base_expected_catalog(
+            project,
+            role=unique_schema.upper(),
+            id_type="DECIMAL(18,0)",
+            text_type="VARCHAR(2000000) UTF8",
+            time_type="TIMESTAMP(3)" if os.getenv('EXASOL_RELEASE', "8") == "8" else "TIMESTAMP",
+            view_type="VIEW",
+            table_type="TABLE",
+            model_stats=no_stats(),
+            case=lambda x: x.upper(),
+            case_columns=True
+    )
+
+
 
 class TestDocsGenReferencesExasol(BaseDocsGenReferences):
-    
     @pytest.fixture(scope="class")
     def dbt_profile_target(self):
         return {
@@ -89,6 +109,22 @@ class TestDocsGenReferencesExasol(BaseDocsGenReferences):
            "dbname": "DB",
            "timestamp_format": "YYYY-MM-DD HH:MI:SS.FF6"
         }
+    
+    @pytest.fixture(scope="class")
+    def expected_catalog(self, project, unique_schema):
+        return expected_references_catalog(
+            project,
+            role=unique_schema.upper(),
+            id_type="DECIMAL(18,0)",
+            text_type="VARCHAR(2000000) UTF8",
+            time_type="TIMESTAMP(3)" if os.getenv('EXASOL_RELEASE', "8") == "8" else "TIMESTAMP",
+            bigint_type="DECIMAL(18,0)",
+            view_type="VIEW",
+            table_type="TABLE",
+            model_stats=no_stats(),
+            case=lambda x: x.upper(),
+            case_columns=True
+        )
 
 class TestBaseIncrementalNotSchemaChangeExasol(BaseIncrementalNotSchemaChange):
     pass
