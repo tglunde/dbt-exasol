@@ -40,9 +40,6 @@ OpenID login through access_token or refresh_token instead of user+password
 ## Using encryption in Exasol 7 vs. 8
 Starting from Exasol 8, encryption is enforced by default. If you are still using Exasol 7 and have trouble connecting, you can disable encryption in profiles.yaml (see optional parameters).
 
-## Materialized View & Clone operations
-In Exasol materialized views and clone operations are not suported. Default behaviour from dbt-core will fail accordingly.
-
 ## Null handling in test_utils null safe handling
 In Exasol empty string are NULL. Due to this behaviour and as of [this pull request 7776 published in dbt-core 1.6](https://github.com/dbt-labs/dbt-core/pull/7776),
 seeds in tests that use EMPTY literal to simulate empty string have to be handled with special behaviour in exasol.
