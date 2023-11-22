@@ -84,7 +84,7 @@ class ExasolCredentials(Credentials):
     socket_timeout: int = pyexasol.constant.DEFAULT_SOCKET_TIMEOUT
     query_timeout: int = pyexasol.constant.DEFAULT_QUERY_TIMEOUT
     compression: bool = False
-    encryption: bool = False
+    encryption: bool = True
     ## Because of potential interference with dbt,
     # the following statements are not (yet) implemented
     # fetch_dict: bool
