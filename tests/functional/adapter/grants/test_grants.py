@@ -12,7 +12,10 @@ class TestIncrementalGrantsExasol(BaseIncrementalGrants):
 
 class TestInvalidGrantsExasol(BaseInvalidGrants):
     def grantee_does_not_exist_error(self):
-        return "user or role 'INVALID_USER' does not exist"
+        # Exasol versions have different error messages:
+        # Exasol 7: "user or role 'INVALID_USER does not exist"
+        # Exasol 8: "user or role INVALID_USER does not exist"
+        return "does not exist"
 
     def privilege_does_not_exist_error(self):
         return "syntax error, unexpected ON_, expecting ',' or TO_ [line 3, column 34]"
