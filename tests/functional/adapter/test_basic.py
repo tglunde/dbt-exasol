@@ -80,22 +80,6 @@ class TestDocsGenerateExasol(BaseDocsGenerate):
            "timestamp_format": "YYYY-MM-DD HH:MI:SS.FF6"
         }
     
-    @pytest.fixture(scope="class")
-    def expected_catalog(self, project, unique_schema):
-        return base_expected_catalog(
-            project,
-            role=unique_schema.upper(),
-            id_type="DECIMAL(18,0)",
-            text_type="VARCHAR(2000000) UTF8",
-            time_type="TIMESTAMP(3)" if os.getenv('EXASOL_RELEASE', "8") == "8" else "TIMESTAMP",
-            view_type="VIEW",
-            table_type="TABLE",
-            model_stats=no_stats(),
-            case=lambda x: x.upper(),
-            case_columns=True
-    )
-
-
 
 class TestDocsGenReferencesExasol(BaseDocsGenReferences):
     @pytest.fixture(scope="class")
@@ -110,21 +94,6 @@ class TestDocsGenReferencesExasol(BaseDocsGenReferences):
            "timestamp_format": "YYYY-MM-DD HH:MI:SS.FF6"
         }
     
-    @pytest.fixture(scope="class")
-    def expected_catalog(self, project, unique_schema):
-        return expected_references_catalog(
-            project,
-            role=unique_schema.upper(),
-            id_type="DECIMAL(18,0)",
-            text_type="VARCHAR(2000000) UTF8",
-            time_type="TIMESTAMP(3)" if os.getenv('EXASOL_RELEASE', "8") == "8" else "TIMESTAMP",
-            bigint_type="DECIMAL(18,0)",
-            view_type="VIEW",
-            table_type="TABLE",
-            model_stats=no_stats(),
-            case=lambda x: x.upper(),
-            case_columns=True
-        )
 
 class TestBaseIncrementalNotSchemaChangeExasol(BaseIncrementalNotSchemaChange):
     pass
