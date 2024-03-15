@@ -447,11 +447,14 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "dbt-core"
+version = "1.7.0"
 version = "1.6.10"
 description = "With dbt, data analysts and engineers can build analytics the way engineers build applications."
 optional = false
 python-versions = ">=3.8"
 files = [
+    {file = "dbt-core-1.7.0.tar.gz", hash = "sha256:5b1cd6e216a0aede4916214e54776b299339393a1afd11494c2117d18fa6e1e8"},
+    {file = "dbt_core-1.7.0-py3-none-any.whl", hash = "sha256:9ed5e8fd893721c1d295c936fe3e223a64f147b0d731ba1195e851fc262a6e63"},
     {file = "dbt-core-1.6.10.tar.gz", hash = "sha256:d1811610d88cd35ec201cc604a5da7b5ae9695cca73e3ac8672dd963676ec0e0"},
     {file = "dbt_core-1.6.10-py3-none-any.whl", hash = "sha256:8482369341682f80b7283777debbbd10c13a362ef48e4b2cfbdf5480a092f010"},
 ]
@@ -459,16 +462,17 @@ files = [
 [package.dependencies]
 agate = ">=1.7.0,<1.8.0"
 cffi = ">=1.9,<2.0.0"
-click = "<9"
+click = ">=8.0.2,<9"
 colorama = ">=0.3.9,<0.5"
-dbt-extractor = ">=0.4.1,<0.5.0"
-dbt-semantic-interfaces = ">=0.2.0,<0.3.0"
-hologram = ">=0.0.16,<0.1.0"
+dbt-extractor = ">=0.5.0,<0.6.0"
+dbt-semantic-interfaces = ">=0.4.0,<0.5.0"
 idna = ">=2.5,<4"
 isodate = ">=0.6,<0.7"
+Jinja2 = ">=3.1.2,<3.2.0"
+jsonschema = ">=3.0"
 Jinja2 = ">=3.1.3,<4"
 logbook = ">=1.5,<1.6"
-mashumaro = {version = ">=3.8.1,<3.9.0", extras = ["msgpack"]}
+mashumaro = {version = ">=3.9,<4.0", extras = ["msgpack"]}
 minimal-snowplow-tracker = ">=0.0.2,<0.1.0"
 networkx = ">=2.3,<4"
 packaging = ">20.9"
@@ -483,38 +487,37 @@ urllib3 = ">=1.0,<2.0"
 
 [[package]]
 name = "dbt-extractor"
-version = "0.4.1"
+version = "0.5.0"
 description = "A tool to analyze and extract information from Jinja used in dbt projects."
 optional = false
 python-versions = ">=3.6.1"
 files = [
-    {file = "dbt_extractor-0.4.1-cp36-abi3-macosx_10_7_x86_64.whl", hash = "sha256:4dc715bd740e418d8dc1dd418fea508e79208a24cf5ab110b0092a3cbe96bf71"},
-    {file = "dbt_extractor-0.4.1-cp36-abi3-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl", hash = "sha256:bc9e0050e3a2f4ea9fe58e8794bc808e6709a0c688ed710fc7c5b6ef3e5623ec"},
-    {file = "dbt_extractor-0.4.1-cp36-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:76872cdee659075d6ce2df92dc62e59a74ba571be62acab2e297ca478b49d766"},
-    {file = "dbt_extractor-0.4.1-cp36-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:81435841610be1b07806d72cd89b1956c6e2a84c360b9ceb3f949c62a546d569"},
-    {file = "dbt_extractor-0.4.1-cp36-abi3-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:7c291f9f483eae4f60dd5859097d7ba51d5cb6c4725f08973ebd18cdea89d758"},
-    {file = "dbt_extractor-0.4.1-cp36-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:822b1e911db230e1b9701c99896578e711232001027b518c44c32f79a46fa3f9"},
-    {file = "dbt_extractor-0.4.1-cp36-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:554d27741a54599c39e5c0b7dbcab77400d83f908caba284a3e960db812e5814"},
-    {file = "dbt_extractor-0.4.1-cp36-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:a805d51a25317f53cbff951c79b9cf75421cf48e4b3e1dfb3e9e8de6d824b76c"},
-    {file = "dbt_extractor-0.4.1-cp36-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:cad90ddc708cb4182dc16fe2c87b1f088a1679877b93e641af068eb68a25d582"},
-    {file = "dbt_extractor-0.4.1-cp36-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:34783d788b133f223844e280e37b3f5244f2fb60acc457aa75c2667e418d5442"},
-    {file = "dbt_extractor-0.4.1-cp36-abi3-musllinux_1_2_armv7l.whl", hash = "sha256:9da211869a1220ea55c5552c1567a3ea5233a6c52fa89ca87a22465481c37bc9"},
-    {file = "dbt_extractor-0.4.1-cp36-abi3-musllinux_1_2_i686.whl", hash = "sha256:7d7c47774dc051b8c18690281a55e2e3d3320e823b17e04b06bc3ff81b1874ba"},
-    {file = "dbt_extractor-0.4.1-cp36-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:037907a7c7ae0391045d81338ca77ddaef899a91d80f09958f09fe374594e19b"},
-    {file = "dbt_extractor-0.4.1-cp36-abi3-win32.whl", hash = "sha256:3fe8d8e28a7bd3e0884896147269ca0202ca432d8733113386bdc84c824561bf"},
-    {file = "dbt_extractor-0.4.1-cp36-abi3-win_amd64.whl", hash = "sha256:35265a0ae0a250623b0c2e3308b2738dc8212e40e0aa88407849e9ea090bb312"},
-    {file = "dbt_extractor-0.4.1.tar.gz", hash = "sha256:75b1c665699ec0f1ffce1ba3d776f7dfce802156f22e70a7b9c8f0b4d7e80f42"},
+    {file = "dbt_extractor-0.5.0-cp38-abi3-macosx_10_7_x86_64.whl", hash = "sha256:f333af362bdb95fa6e52b88e1df3575755680190b4867344c808d438a98b6e71"},
+    {file = "dbt_extractor-0.5.0-cp38-abi3-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl", hash = "sha256:111e4766736a00f1a4b76d0fe2016d70015b833b791b0bf20c2328e3d27e35f6"},
+    {file = "dbt_extractor-0.5.0-cp38-abi3-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:a980467342e3a9f9f79eb8eab2dd0106f8fd3c13913b7af2f4ad96279ad3df25"},
+    {file = "dbt_extractor-0.5.0-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:166bad7ee26487ad22b4d7d3c98f168b0c450004aaaa7babd9ccf3c7e36a48f8"},
+    {file = "dbt_extractor-0.5.0-cp38-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:3249ce65b6add2c0bef756d8e7fe19a838451c5a63c08e52de7b4a4c5aad40de"},
+    {file = "dbt_extractor-0.5.0-cp38-abi3-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:c1a4dcf3571da55671dc3d96df64ea0ec3649588bf5a58677cad5b207edd9e93"},
+    {file = "dbt_extractor-0.5.0-cp38-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:856719ad009cf3aa29d8f0abbf72eff0286ba0f2351c58c0c4eb87303aabf476"},
+    {file = "dbt_extractor-0.5.0-cp38-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:6ca976dd4d73de8be2eddde1285007ee7f2f826218a7975bd00e71830b499eac"},
+    {file = "dbt_extractor-0.5.0-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2a56a24cc0b52d004274c9a4eadb342fddc36afae178f59da400da5a214061a4"},
+    {file = "dbt_extractor-0.5.0-cp38-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:b61a14f273d94b9279510e3cfab0559ca4f8bff83a3e1ea8b367d17a34bccf65"},
+    {file = "dbt_extractor-0.5.0-cp38-abi3-musllinux_1_2_armv7l.whl", hash = "sha256:01216bd1636a6e0f80a72f1baaefe2a9ec95e16dc86e4c4c9474bf11307c0847"},
+    {file = "dbt_extractor-0.5.0-cp38-abi3-musllinux_1_2_i686.whl", hash = "sha256:fcce461dc21e737e3c9788413bb3142dc50bf5c64a35035ffe1f8441bc86d133"},
+    {file = "dbt_extractor-0.5.0-cp38-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:7199d4fccd21889b59d873fd7b453a59672e9cdf445b938cf280d0fb1d805afc"},
+    {file = "dbt_extractor-0.5.0-cp38-abi3-win32.whl", hash = "sha256:4314011c99f91a4041f048c6a4e2b9d24180f5e5935febca68dd28db5ef55177"},
+    {file = "dbt_extractor-0.5.0-cp38-abi3-win_amd64.whl", hash = "sha256:0dc2879068f4b325beb2d866842b923d5df5ad953c122588b17151b32d9cd33b"},
 ]
 
 [[package]]
 name = "dbt-semantic-interfaces"
-version = "0.2.3"
+version = "0.4.0"
 description = "The shared semantic layer definitions that dbt-core and MetricFlow use"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "dbt_semantic_interfaces-0.2.3-py3-none-any.whl", hash = "sha256:69235a6b261c45d1501c29a9b2a9496935b0c764e7fd25a2f83471ef53dae15f"},
-    {file = "dbt_semantic_interfaces-0.2.3.tar.gz", hash = "sha256:628fd65ce01bbfbf9115866d2bb11616d0e1987b65fb4fabfdf9bb807177c2ee"},
+    {file = "dbt_semantic_interfaces-0.4.0-py3-none-any.whl", hash = "sha256:dc01f861aa93f511e658bf2aa616451ec2325643a3a684b0c9efba1120495c85"},
+    {file = "dbt_semantic_interfaces-0.4.0.tar.gz", hash = "sha256:53cbf7a93bee5d1569f43a4566450e658f05857613d8ebaabd08239236d4faa2"},
 ]
 
 [package.dependencies]
@@ -522,19 +525,26 @@ click = ">=7.0,<9.0"
 importlib-metadata = ">=6.0,<7.0"
 jinja2 = ">=3.0,<4.0"
 jsonschema = ">=4.0,<5.0"
-more-itertools = ">=8.0,<9.0"
+more-itertools = ">=8.0,<11.0"
 pydantic = ">=1.10,<2.0"
 python-dateutil = ">=2.0,<3.0"
 pyyaml = ">=6.0,<7.0"
-typing-extensions = ">=4.4,<5.0"
+typing-extensions = ">=4.0,<5.0"
 
 [[package]]
 name = "dbt-tests-adapter"
+version = "1.7.0"
 version = "1.6.10"
 description = "The dbt adapter tests for adapter plugins"
 optional = false
 python-versions = ">=3.8"
 files = [
+    {file = "dbt-tests-adapter-1.7.0.tar.gz", hash = "sha256:128ed6a2c81570aaafbbc92ff0b8318dd78315d78dbea1da3c8b5c50694154e3"},
+    {file = "dbt_tests_adapter-1.7.0-py3-none-any.whl", hash = "sha256:44fe7acbe6e8d6dd2fe1eb5cddb94ad1bff7555d3c3124160b0760b2786ee355"},
+]
+
+[package.dependencies]
+dbt-core = "1.7.0"
     {file = "dbt-tests-adapter-1.6.10.tar.gz", hash = "sha256:757147c18e44ea9687e024b8055d91b93906525a83dd610228667850ab173778"},
     {file = "dbt_tests_adapter-1.6.10-py3-none-any.whl", hash = "sha256:27b953f72cd181d21ebcd106681ae6781e0a7165290df3eefd003610173284f3"},
 ]
@@ -1140,13 +1150,13 @@ files = [
 
 [[package]]
 name = "mashumaro"
-version = "3.8.1"
+version = "3.10"
 description = "Fast serialization library on top of dataclasses"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "mashumaro-3.8.1-py3-none-any.whl", hash = "sha256:e060469a4bec1c86f8145ea27ecd99027ea3e343075a4efcb5e8a969a45b9fb9"},
-    {file = "mashumaro-3.8.1.tar.gz", hash = "sha256:8bae8b25e2287b75094655b8ba8635f34016c09ca16498188f2f3b198d88b7ef"},
+    {file = "mashumaro-3.10-py3-none-any.whl", hash = "sha256:d2c0fd5e7878987629d41f4986d9b0903d362a92eeb299b7d88b87eb113f4f48"},
+    {file = "mashumaro-3.10.tar.gz", hash = "sha256:0248a5c8574aa6cd20696621502d38a7ea66af3d6d93c5d03f93b33298edc878"},
 ]
 
 [package.dependencies]
@@ -1200,13 +1210,13 @@ six = ">=1.9.0,<2.0"
 
 [[package]]
 name = "more-itertools"
-version = "8.14.0"
+version = "10.1.0"
 description = "More routines for operating on iterables, beyond itertools"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.8"
 files = [
-    {file = "more-itertools-8.14.0.tar.gz", hash = "sha256:c09443cd3d5438b8dafccd867a6bc1cb0894389e90cb53d227456b0b0bccb750"},
-    {file = "more_itertools-8.14.0-py3-none-any.whl", hash = "sha256:1bc4f91ee5b1b31ac7ceacc17c09befe6a40a503907baf9c839c229b5095cfd2"},
+    {file = "more-itertools-10.1.0.tar.gz", hash = "sha256:626c369fa0eb37bac0291bce8259b332fd59ac792fa5497b59837309cd5b114a"},
+    {file = "more_itertools-10.1.0-py3-none-any.whl", hash = "sha256:64e0735fcfdc6f3464ea133afe8ea4483b1c5fe3a3d69852e6503b43a0b222e6"},
 ]
 
 [[package]]
@@ -2653,4 +2663,5 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8, <3.12"
+content-hash = "78eb89b238985a5ba38e5aaa1fcdb278214e12851935c13884bf3d6d8fc15c2c"
 content-hash = "1c69386aa00ac07d09315b6ab7d9cdc3d77b479009275865af77897d84e59c0d"

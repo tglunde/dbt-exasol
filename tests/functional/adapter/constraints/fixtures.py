@@ -1,3 +1,16 @@
+exasol_my_model_sql = """
+{{
+  config(
+    materialized = "table"
+  )
+}}
+
+select
+  1 as id,
+  'blue' as color,
+  '2019-01-01' as date_day
+"""
+
 exasol_model_schema_yml = """
 version: 2
 models:
@@ -7,7 +20,7 @@ models:
         enforced: true
     columns:
       - name: id
-        data_type: integer
+        data_type: decimal(18,0)
         description: hello
         constraints:
           - type: not_null
@@ -25,7 +38,7 @@ models:
         enforced: true
     columns:
       - name: id
-        data_type: integer
+        data_type: decimal(18,0)
         description: hello
         constraints:
           - type: not_null
@@ -43,7 +56,7 @@ models:
         enforced: true
     columns:
       - name: id
-        data_type: integer
+        data_type: decimal(18,0)
         description: hello
         constraints:
           - type: not_null
@@ -61,7 +74,7 @@ models:
         enforced: true
     columns:
       - name: id
-        data_type: integer
+        data_type: decimal(18,0)
         description: hello
         constraints:
           - type: not_null
@@ -92,7 +105,7 @@ models:
         name: strange_uniqueness_requirement
     columns:
       - name: id
-        data_type: integer
+        data_type: decimal(18,0)
         description: hello
         constraints:
           - type: not_null
@@ -119,7 +132,7 @@ models:
         columns: [ '"from"' ]
     columns:
       - name: id
-        data_type: integer
+        data_type: decimal(18,0)
         description: hello
         constraints:
           - type: not_null
@@ -143,7 +156,7 @@ my_model_view_wrong_order_sql = """
 
 select
   cast('blue' as char(50)) as color,
-  cast(1 as integer) as id,
+  cast(1 as decimal(18,0)) as id,
   cast('2019-01-01' as char(50)) as date_day
 """
 
@@ -156,7 +169,7 @@ my_model_view_wrong_name_sql = """
 
 select
   cast('blue' as char(50)) as color,
-  cast(1 as integer) as error,
+  cast(1 as decimal(18,0)) as error,
   cast('2019-01-01' as char(50)) as date_day
 """
 
@@ -174,7 +187,7 @@ select
 
 exasol_expected_sql = """
 create or replace table <model_identifier> ( 
-    id integer not null, 
+    id decimal(18,0) not null, 
     color char(50), 
     date_day char(50) 
     ) ; 
