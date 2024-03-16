@@ -37,6 +37,9 @@ OpenID login through access_token or refresh_token instead of user+password
 
 # Known isues
 
+## source freshness not yet implemented
+Implementation for last_commit from EXA_ALL_OBJECTS per dbt model is missing.
+
 ## Using encryption in Exasol 7 vs. 8
 Starting from Exasol 8, encryption is enforced by default. If you are still using Exasol 7 and have trouble connecting, you can disable encryption in profiles.yaml (see optional parameters).
 
