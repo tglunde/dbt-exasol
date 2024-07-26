@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import ClassVar, Dict
 
 from dbt.adapters.base.column import Column
-from dbt.exceptions import DbtRuntimeError
+from dbt_common.exceptions import DbtRuntimeError
 
 
 @dataclass
