@@ -10,13 +10,13 @@ from dataclasses import dataclass
 from typing import Any, List, Optional
 
 import agate
-import dbt.exceptions
+import dbt_common.exceptions
 import pyexasol
 from dateutil import parser
-from dbt.adapters.base import Credentials  # type: ignore
+#from dbt.adapters.base import Credentials  # type: ignore
 from dbt.adapters.sql import SQLConnectionManager  # type: ignore
-from dbt.contracts.connection import AdapterResponse
-from dbt.events import AdapterLogger
+from dbt.adapters.contracts.connection import AdapterResponse, Credentials
+from dbt.adapters.events.logging import AdapterLogger
 from hologram.helpers import StrEnum
 from pyexasol import ExaConnection
 
@@ -140,13 +140,13 @@ class ExasolConnectionManager(SQLConnectionManager):
             LOGGER.debug(f"Error running SQL: {sql}")
             LOGGER.debug("Rolling back transaction.")
             self.rollback_if_open()
-            if isinstance(yielded_exception, dbt.exceptions.DbtRuntimeError):
+            if isinstance(yielded_exception, dbt_common.exceptions.DbtRuntimeError):
                 # during a sql query, an internal to dbt exception was raised.
                 # this sounds a lot like a signal handler and probably has
                 # useful information, so raise it without modification.
                 raise
 
-            raise dbt.exceptions.DbtRuntimeError(yielded_exception)
+            raise dbt_common.exceptions.DbtRuntimeError(yielded_exception)
 
     @classmethod
     def get_result_from_cursor(cls, cursor: Any, limit: Optional[int]) -> agate.Table:
@@ -176,7 +176,7 @@ class ExasolConnectionManager(SQLConnectionManager):
                             rows[rownum] = tmp
             data = cls.process_results(column_names, rows)
 
-        return dbt.clients.agate_helper.table_from_data_flat(data, column_names)  # type: ignore
+        return dbt_common.clients.agate_helper.table_from_data_flat(data, column_names)  # type: ignore
 
     @classmethod
     # pylint: disable=raise-missing-from
@@ -198,7 +198,7 @@ class ExasolConnectionManager(SQLConnectionManager):
             else:
                 protocol_version = pyexasol.PROTOCOL_V3
         except:
-            raise dbt.exceptions.DbtRuntimeError(
+            raise dbt_common.exceptions.DbtRuntimeError(
                 f"{credentials.protocol_version} is not a valid protocol version."
             )
 
@@ -286,7 +286,7 @@ class ExasolCursor:
             try:
                 self.stmt = self.connection.execute(query)
             except pyexasol.ExaQueryError as e:
-                raise dbt.exceptions.DbtDatabaseError(
+                raise dbt_common.exceptions.DbtDatabaseError(
                     "Exasol Query Error: " + e.message
                 )
         return self
