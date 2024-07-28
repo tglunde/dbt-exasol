@@ -1,7 +1,7 @@
 import os
 
 import pytest
-from dbt.exceptions import CompilationError
+from dbt_common.exceptions import CompilationError
 from dbt.tests.adapter.utils.base_utils import BaseUtils
 from dbt.tests.adapter.utils.test_any_value import BaseAnyValue
 from dbt.tests.adapter.utils.test_array_append import BaseArrayAppend
