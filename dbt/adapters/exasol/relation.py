@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import Optional, Type, TypeVar
 
 from dbt.adapters.base.relation import BaseRelation, Policy
-from dbt.contracts.relation import RelationType
+from dbt.adapters.contracts.relation import RelationType
 
 
 @dataclass
@@ -62,3 +62,11 @@ class ExasolRelation(BaseRelation):
     @staticmethod
     def add_ephemeral_prefix(name: str):
         return f"dbt__CTE__{name}"
+    
+    def _render_limited_alias(self) -> str:
+        """Some databases require an alias for subqueries (postgres, mysql) for all others we want to avoid adding
+        an alias as it has the potential to introduce issues with the query if the user also defines an alias.
+        """
+        if self.require_alias:
+            return f" dbt_limit_subq_{self.table}"
+        return ""
