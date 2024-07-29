@@ -37,6 +37,9 @@ OpenID login through access_token or refresh_token instead of user+password
 
 # Known isues
 
+## >=1.8 license change
+As of dbt-exasol version 1.8 we have decided to switch to Apache License from GPLv3 - to be equal to dbt-core licensing.
+
 ## Using encryption in Exasol 7 vs. 8
 Starting from Exasol 8, encryption is enforced by default. If you are still using Exasol 7 and have trouble connecting, you can disable encryption in profiles.yaml (see optional parameters).
 
@@ -59,7 +62,7 @@ The following database constraints are implemented for Exasol:
 | primary key  | enforced  |
 | foreign key  | enforced  |
 
-## >=1.5 Incrmental model update
+## >=1.5 Incremental model update
 Fallback to dbt-core implementation and supporting strategies 
 - append
 - merge
