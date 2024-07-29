@@ -40,6 +40,9 @@ OpenID login through access_token or refresh_token instead of user+password
 ## >=1.8 license change
 As of dbt-exasol version 1.8 we have decided to switch to Apache License from GPLv3 - to be equal to dbt-core licensing.
 
+## setuptools breaking change
+Due to a breaking change in setuptools and a infected dependency from dbt-core, we need to use the following [workaround for poetry install](https://github.com/pypa/setuptools/issues/4519#issuecomment-2255446798).
+
 ## Using encryption in Exasol 7 vs. 8
 Starting from Exasol 8, encryption is enforced by default. If you are still using Exasol 7 and have trouble connecting, you can disable encryption in profiles.yaml (see optional parameters).
 
