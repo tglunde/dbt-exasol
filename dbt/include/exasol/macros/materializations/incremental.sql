@@ -9,6 +9,10 @@
   {% set  grant_config = config.get('grants') %}
   {%- set full_refresh_mode = (should_full_refresh()  or existing_relation.is_view) -%}
 
+  {%- set partition_by_config = config.get('partition_by_config') -%}
+  {%- set distribute_by_config = config.get('distribute_by_config') -%}
+  {%- set primary_key_config = config.get('primary_key_config') -%}
+
 
   {{ run_hooks(pre_hooks, inside_transaction=False) }}
 
@@ -56,6 +60,10 @@
   {% call statement("main") %}
       {{ build_sql }}
   {% endcall %}
+
+  {% if existing_relation is none or full_refresh_mode%}
+      {{ add_constraints(target_relation, partition_by_config, distribute_by_config, primary_key_config) }}
+  {% endif %}
 
   {% do persist_docs(target_relation, model) %}
 
