@@ -37,6 +37,28 @@ OpenID login through access_token or refresh_token instead of user+password
 
 # Known isues
 
+## >=1.8.1 additional parameters
+As of dbt-exasol 1.8.1 it is possible to add new model config parameters for models materialized as table or incremental. 
+<ul>
+<li><strong>partition_by_config</strong></li>
+<li><strong>distribute_by_config</strong></li>
+<li><strong>primary_key_config</strong></li>
+</ul>
+
+### Example table materialization config
+
+``` properties
+{{
+    config(
+        materialized='table',
+        primary_key_config=['<column>','<column2>'],
+        partition_by_config='<column>',
+        distribute_by_config='<column>'
+    )
+}}
+```
+**If more than one column is used, put them in a list.*
+
 ## >=1.8 license change
 As of dbt-exasol version 1.8 we have decided to switch to Apache License from GPLv3 - to be equal to dbt-core licensing.
 
