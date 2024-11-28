@@ -36,20 +36,17 @@
 
 {% macro add_constraints(target_relation, partition_by_config, distribute_by_config, primary_key_config) %}
     {%- if partition_by_config is not none -%}
-        {% call statement('add_constraints') %}
+        |SEPARATEMEPLEASE|
             ALTER TABLE {{target_relation}} {{partition_by_conf(partition_by_config)}};
-        {% endcall %}
     {% endif %}
     
     {%- if distribute_by_config is not none -%}
-        {% call statement('add_constraints') %}
+        |SEPARATEMEPLEASE|
             ALTER TABLE {{target_relation}} {{distribute_by_conf(distribute_by_config)}}; 
-        {% endcall %} 
     {% endif %}
     
     {%- if primary_key_config is not none -%}
-        {% call statement('add_constraints') %}
+        |SEPARATEMEPLEASE|
             ALTER TABLE {{target_relation}} {{primary_key_conf(primary_key_config, target_relation)}};
-        {% endcall %} 
     {% endif %}  
 {% endmacro %}
