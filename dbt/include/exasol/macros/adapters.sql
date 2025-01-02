@@ -85,18 +85,23 @@ AS
 
 {% macro exasol__create_table_as(temporary, relation, sql) -%}
     {%- set contract_config = config.get('contract') -%}
+
+    {%- set partition_by_config = config.get('partition_by_config') -%}
+    {%- set distribute_by_config = config.get('distribute_by_config') -%}
+    {%- set primary_key_config = config.get('primary_key_config') -%}
     CREATE OR REPLACE TABLE {{ relation.schema }}.{{ relation.identifier }} 
         {%- if contract_config.enforced -%}
           {{- get_assert_columns_equivalent(sql) }}
           {{ get_table_columns_and_constraints() -}};
           {%- set sql = get_select_subquery(sql) %}
-        |SEPARATEMEPLEASE|
-        INSERT INTO {{ relation.schema }}.{{ relation.identifier }}
-        {{ sql }}   
         {%- else %}
         AS 
-        {{ sql }}
+        {{ sql }} with no data;
         {% endif %}
+    {{ add_constraints(relation, partition_by_config, distribute_by_config, primary_key_config) }}
+  |SEPARATEMEPLEASE|
+  INSERT INTO {{ relation.schema }}.{{ relation.identifier }}
+        {{ sql }}
 {% endmacro %}
 
 {% macro exasol__truncate_relation(relation) -%}

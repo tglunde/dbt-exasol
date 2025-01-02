@@ -1,7 +1,7 @@
 """dbt-exasol Adapter implementation extending SQLAdapter"""
 from __future__ import absolute_import
 
-from typing import Dict, Optional, List, Set, Iterable, FrozenSet, Tuple
+from typing import Dict, Optional, List, Set, Iterable, FrozenSet, Tuple, Union
 
 from itertools import chain
 import agate
@@ -13,7 +13,7 @@ from dbt.adapters.sql import SQLAdapter
 from dbt_common.exceptions import CompilationError
 from dbt_common.utils import filter_null_values
 from dbt.adapters.base.meta import available
-from dbt.adapters.base.impl import ConstraintSupport
+from dbt.adapters.base.impl import ConstraintSupport, AdapterConfig
 from dbt_common.contracts.constraints import ConstraintType
 
 
@@ -21,6 +21,10 @@ from dbt.adapters.exasol import (ExasolColumn, ExasolConnectionManager,
                                  ExasolRelation)
 
 
+class ExasolConfig(AdapterConfig):
+    partition_by_config: Optional[Union[str, List[str]]] = None
+    distribute_by_config: Optional[Union[str, List[str]]] = None
+    primary_key_config: Optional[Union[str, List[str]]] = None
 
 
 class ExasolAdapter(SQLAdapter):

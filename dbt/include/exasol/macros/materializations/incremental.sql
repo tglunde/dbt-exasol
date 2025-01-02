@@ -9,7 +9,6 @@
   {% set  grant_config = config.get('grants') %}
   {%- set full_refresh_mode = (should_full_refresh()  or existing_relation.is_view) -%}
 
-
   {{ run_hooks(pre_hooks, inside_transaction=False) }}
 
   -- `BEGIN` happens here:
