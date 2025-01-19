@@ -96,7 +96,8 @@ AS
           {%- set sql = get_select_subquery(sql) %}
         {%- else %}
         AS 
-        {{ sql }} with no data;
+        {{ sql }}
+        with no data;
         {% endif %}
     {{ add_constraints(relation, partition_by_config, distribute_by_config, primary_key_config) }}
   |SEPARATEMEPLEASE|
